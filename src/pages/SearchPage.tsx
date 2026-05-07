@@ -1,76 +1,74 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { useSearchParams } from "react-router-dom";
+import { searchMulti } from "../services/tmdbApi";
 import MediaCard from "../components/MediaCard";
 import LoadingSpinner from "../components/LoadingSpinner";
-import ErrorState from "../components/ErrorState";
 
-const TMDB_API_KEY = "ff54d7a5fdc2ab56530491ac8d378131";
+export default function SearchPage() {
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get("q") || "";
 
-interface TurkishShow {
-  id: number;
-  name: string;
-  poster_path: string;
-  backdrop_path?: string;
-  vote_average: number;
-  first_air_date?: string;
-  overview_ar: string; // الوصف العربي (سيتم دمجه)
-}
-
-export default function TurkishShowsPage() {
-  const [shows, setShows] = useState<TurkishShow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
 
   useEffect(() => {
-    const fetchTurkishShows = async () => {
-      try {
-        // جلب البيانات بالإنجليزية (للأسماء) والعربية (للوصف)
-        const [resEn, resAr] = await Promise.all([
-          axios.get(
-            `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_origin_country=TR&sort_by=popularity.desc&language=en`,
-          ),
-          axios.get(
-            `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_origin_country=TR&sort_by=popularity.desc&language=ar`,
-          ),
-        ]);
+    if (!query.trim()) {
+      setResults([]);
+      setSearched(false);
+      return;
+    }
 
-        // دمج البيانات: الاسم من الانجليزي، الوصف من العربي
-        const mergedShows = resEn.data.results.map(
-          (showEn: any, index: number) => {
-            const showAr = resAr.data.results[index] || {};
-            return {
-              ...showEn,
-              name: showEn.name, // الاسم انجليزي
-              overview_ar: showAr.overview || showEn.overview, // وصف عربي
-            };
-          },
+    const fetchResults = async () => {
+      setLoading(true);
+      setSearched(true);
+      try {
+        const data = await searchMulti(query);
+        const filtered = data.filter(
+          (item: any) =>
+            (item.media_type === "movie" || item.media_type === "tv") &&
+            item.poster_path,
         );
-        setShows(mergedShows);
+        setResults(filtered);
       } catch (err) {
         console.error(err);
-        setError(true);
+        setResults([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchTurkishShows();
-  }, []);
+
+    fetchResults();
+  }, [query]);
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorState message="فشل تحميل المسلسلات التركية" />;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">🎭 Turkish TV Shows</h1>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {shows.map((show) => (
-          <MediaCard
-            key={show.id}
-            media={{ ...show, title: show.name, media_type: "tv" }}
-            type="tv"
-          />
-        ))}
-      </div>
+    <div className="container mx-auto px-4 py-6">
+      {!query.trim() ? (
+        <div className="text-center py-20 text-gray-400">
+          <p className="text-xl">ابحث عن فيلم أو مسلسل...</p>
+        </div>
+      ) : searched && results.length === 0 ? (
+        <div className="text-center py-20 text-gray-400">
+          <p className="text-xl">لا توجد نتائج لـ "{query}"</p>
+        </div>
+      ) : (
+        <>
+          <h1 className="text-2xl font-bold mb-6">
+            نتائج البحث عن: <span className="text-rose-500">"{query}"</span>
+          </h1>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {results.map((item: any) => (
+              <MediaCard
+                key={item.id}
+                media={item}
+                type={item.media_type === "movie" ? "movie" : "tv"}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

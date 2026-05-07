@@ -25,7 +25,9 @@ export default function Header() {
   const { settings, toggleEnabled: originalToggleEnabled } = useFamilyMode();
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const tvRef = useRef<HTMLDivElement>(null);
+  const moviesRef = useRef<HTMLDivElement>(null);
+  const animeRef = useRef<HTMLDivElement>(null);
 
   const toggleEnabled = () => {
     originalToggleEnabled();
@@ -42,9 +44,14 @@ export default function Header() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        tvRef.current &&
+        !tvRef.current.contains(target) &&
+        moviesRef.current &&
+        !moviesRef.current.contains(target) &&
+        animeRef.current &&
+        !animeRef.current.contains(target)
       ) {
         setOpenDropdown(null);
       }
@@ -58,28 +65,19 @@ export default function Header() {
     navigate("/");
   };
 
-  const mainNavLinks = [
-    { name: "الرئيسية", path: "/", icon: Home, onClick: goToHome },
-  ];
-
-  // قائمة مسلسلات منسدلة (بمسارات جديدة)
   const tvDropdownItems = [
     { name: "🎬 مسلسلات أجنبية", path: "/tv" },
     { name: "🎭 مسلسلات تركية", path: "/tv/turkish" },
-    { name: "🍜 مسلسلات آسيوية", path: "/asian" }, // يذهب إلى صفحة آسيوي الموحدة
+    { name: "🍜 مسلسلات آسيوية", path: "/asian" },
   ];
 
-  // قائمة أفلام منسدلة (بمسارات جديدة)
   const moviesDropdownItems = [
     { name: "🎬 أفلام أجنبية", path: "/movies" },
     { name: "🎭 أفلام تركية", path: "/movies/turkish" },
-    { name: "🍜 أفلام آسيوية", path: "/asian" }, // يذهب إلى صفحة آسيوي الموحدة
+    { name: "🍜 أفلام آسيوية", path: "/asian" },
   ];
 
-  // قائمة أنمي منسدلة (بمسار واحد موحد)
-  const animeDropdownItems = [
-    { name: "🎬 أنمي", path: "/anime" }, // صفحة واحدة تجمع الكل
-  ];
+  const animeDropdownItems = [{ name: "🎬 أنمي", path: "/anime" }];
 
   const navLinks = [
     { name: "المفضلة", path: "/favorites", icon: Heart },
@@ -97,20 +95,17 @@ export default function Header() {
         </button>
 
         <nav className="hidden md:flex items-center gap-6">
-          {mainNavLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              onClick={link.onClick}
-              className="text-gray-300 hover:text-white transition flex items-center gap-1"
-            >
-              <link.icon className="w-4 h-4" />
-              <span>{link.name}</span>
-            </Link>
-          ))}
+          <Link
+            to="/"
+            onClick={goToHome}
+            className="text-gray-300 hover:text-white transition flex items-center gap-1"
+          >
+            <Home className="w-4 h-4" />
+            <span>الرئيسية</span>
+          </Link>
 
-          {/* قائمة مسلسلات منسدلة */}
-          <div className="relative" ref={dropdownRef}>
+          {/* قائمة مسلسلات */}
+          <div className="relative" ref={tvRef}>
             <button
               onClick={() =>
                 setOpenDropdown(openDropdown === "tv" ? null : "tv")
@@ -137,8 +132,8 @@ export default function Header() {
             )}
           </div>
 
-          {/* قائمة أفلام منسدلة */}
-          <div className="relative">
+          {/* قائمة أفلام */}
+          <div className="relative" ref={moviesRef}>
             <button
               onClick={() =>
                 setOpenDropdown(openDropdown === "movies" ? null : "movies")
@@ -165,8 +160,8 @@ export default function Header() {
             )}
           </div>
 
-          {/* قائمة أنمي منسدلة */}
-          <div className="relative">
+          {/* قائمة أنمي */}
+          <div className="relative" ref={animeRef}>
             <button
               onClick={() =>
                 setOpenDropdown(openDropdown === "anime" ? null : "anime")
@@ -206,7 +201,6 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          {/* زر الوضع العائلي */}
           <button
             onClick={toggleEnabled}
             className={`flex items-center gap-2 px-3 py-1 rounded-full transition ${
@@ -214,11 +208,6 @@ export default function Header() {
                 ? "bg-green-600 text-white"
                 : "bg-gray-700 text-gray-300 hover:bg-gray-600"
             }`}
-            title={
-              settings.enabled
-                ? "الوضع العائلي مفعل - اضغط لإلغاء"
-                : "الوضع العائلي غير مفعل - اضغط لتفعيل"
-            }
           >
             <Users className="w-4 h-4" />
             <span className="text-sm hidden lg:inline">
@@ -226,11 +215,9 @@ export default function Header() {
             </span>
           </button>
 
-          {/* زر الإعدادات */}
           <Link
             to="/settings"
             className="flex items-center gap-2 px-3 py-1 rounded-full transition bg-gray-700 text-gray-300 hover:bg-gray-600"
-            title="الإعدادات"
           >
             <Settings className="w-4 h-4" />
             <span className="text-sm hidden lg:inline">الإعدادات</span>
@@ -256,7 +243,7 @@ export default function Header() {
         </button>
       </div>
 
-      {/* القائمة المتنقلة (Mobile Menu) */}
+      {/* القائمة المتنقلة */}
       {isMenuOpen && (
         <div className="md:hidden bg-gray-900 border-t border-gray-800 py-4 px-4 flex flex-col gap-3">
           <Link
@@ -351,13 +338,13 @@ export default function Header() {
           <Link
             to="/settings"
             onClick={() => setIsMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg transition w-full bg-gray-700 text-gray-300 hover:bg-gray-600"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600"
           >
             <Settings className="w-4 h-4" />
             <span>الإعدادات</span>
           </Link>
 
-          <div className="flex items-center bg-gray-800 rounded-full px-3 py-1 mt-2">
+          <div className="flex items-center bg-gray-800 rounded-full px-3 py-2">
             <Search className="w-4 h-4 text-gray-400" />
             <input
               type="text"

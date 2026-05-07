@@ -13,12 +13,17 @@ import {
 } from "lucide-react";
 import { useFavorites } from "../hooks/useFavorites";
 import { useWatchlist } from "../hooks/useWatchlist";
+import { addToWatchHistory } from "../hooks/useWatchHistory";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorState from "../components/ErrorState";
+import MediaCard from "../components/MediaCard";
 import {
   getMovieDetails,
   getTvShowDetails,
   getOfficialTrailerKey,
+  getSimilarMovies,
+  getSimilarTvShows,
+  getCredits,
 } from "../services/tmdbApi";
 import { getVideoSource } from "../services/proxyApi";
 
@@ -39,6 +44,8 @@ export default function MediaDetailPage() {
   }
 
   const [media, setMedia] = useState<any>(null);
+  const [similar, setSimilar] = useState<any[]>([]);
+  const [cast, setCast] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -52,6 +59,8 @@ export default function MediaDetailPage() {
 
   useEffect(() => {
     setMedia(null);
+    setSimilar([]);
+    setCast([]);
     setTrailerKey(null);
     setErrorMsg("");
     setLoading(true);
@@ -70,11 +79,21 @@ export default function MediaDetailPage() {
       setLoading(true);
       setErrorMsg("");
       try {
-        const data = isMovie
-          ? await getMovieDetails(mediaId)
-          : await getTvShowDetails(mediaId);
+        const [data, similarData, castData] = await Promise.all([
+          isMovie ? getMovieDetails(mediaId) : getTvShowDetails(mediaId),
+          isMovie ? getSimilarMovies(mediaId) : getSimilarTvShows(mediaId),
+          getCredits(isMovie ? "movie" : "tv", mediaId),
+        ]);
         if (data) {
           setMedia(data);
+          setSimilar(similarData || []);
+          setCast(castData || []);
+          addToWatchHistory({
+            id: data.id,
+            type: isMovie ? "movie" : "tv",
+            title: isMovie ? data.title : data.name,
+            poster_path: data.poster_path,
+          });
         } else {
           setErrorMsg("لم يتم العثور على بيانات");
         }
@@ -93,8 +112,10 @@ export default function MediaDetailPage() {
     const fetchTrailer = async () => {
       if (!mediaId) return;
       try {
-        // تم إزالة المعاملات لأن getOfficialTrailerKey لا تقبل أي معاملات حالياً
-        const key = await getOfficialTrailerKey();
+        const key = await getOfficialTrailerKey(
+          isMovie ? "movie" : "tv",
+          mediaId,
+        );
         setTrailerKey(key);
       } catch (err) {
         console.error("Error fetching trailer:", err);
@@ -109,15 +130,24 @@ export default function MediaDetailPage() {
   const handleFavorite = () => {
     if (!media) return;
     const item = {
+      id: mediaId,
       mal_id: mediaId,
       title: isMovie ? media.title : media.name,
+      name: isMovie ? media.title : media.name,
+      poster_path: media.poster_path || "",
+      backdrop_path: media.backdrop_path || "",
+      vote_average: media.vote_average || 0,
+      overview: media.overview || "",
+      release_date: media.release_date || media.first_air_date || "",
+      genre_ids: media.genres?.map((g: any) => g.id) || [],
+      type: isMovie ? "movie" : "tv",
+      score: media.vote_average,
       images: {
         jpg: {
           image_url: `https://image.tmdb.org/t/p/w500${media.poster_path}`,
           large_image_url: `https://image.tmdb.org/t/p/original${media.backdrop_path || media.poster_path}`,
         },
       },
-      score: media.vote_average,
     };
     if (isFavorite(mediaId)) removeFavorite(mediaId);
     else addFavorite(item);
@@ -126,15 +156,24 @@ export default function MediaDetailPage() {
   const handleWatchlist = () => {
     if (!media) return;
     const item = {
+      id: mediaId,
       mal_id: mediaId,
       title: isMovie ? media.title : media.name,
+      name: isMovie ? media.title : media.name,
+      poster_path: media.poster_path || "",
+      backdrop_path: media.backdrop_path || "",
+      vote_average: media.vote_average || 0,
+      overview: media.overview || "",
+      release_date: media.release_date || media.first_air_date || "",
+      genre_ids: media.genres?.map((g: any) => g.id) || [],
+      type: isMovie ? "movie" : "tv",
+      score: media.vote_average,
       images: {
         jpg: {
           image_url: `https://image.tmdb.org/t/p/w500${media.poster_path}`,
           large_image_url: `https://image.tmdb.org/t/p/original${media.backdrop_path || media.poster_path}`,
         },
       },
-      score: media.vote_average,
     };
     if (isInWatchlist(mediaId)) removeFromWatchlist(mediaId);
     else addToWatchlist(item);
@@ -169,8 +208,8 @@ export default function MediaDetailPage() {
   if (!media) return <ErrorState message="لا توجد بيانات" />;
 
   const title = isMovie ? media.title : media.name;
-  const overview = isMovie ? media.overview_ar : media.overview_ar;
-  const genres = isMovie ? media.genres_ar : media.genres_ar;
+  const overview = media.overview;
+  const genres = media.genres;
   const posterPath = media.poster_path;
   const backdropPath = media.backdrop_path;
   const voteAverage = media.vote_average;
@@ -274,6 +313,54 @@ export default function MediaDetailPage() {
         </div>
       </div>
 
+      {cast.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold mb-4">طاقم التمثيل</h2>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-4">
+            {cast.map((actor: any) => (
+              <div key={actor.id} className="text-center">
+                <img
+                  src={
+                    actor.profile_path
+                      ? `https://image.tmdb.org/t/p/w185${actor.profile_path}`
+                      : "https://via.placeholder.com/100x150?text=?"
+                  }
+                  alt={actor.name}
+                  className="w-full aspect-[2/3] object-cover rounded-lg mb-2"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "https://via.placeholder.com/100x150?text=?";
+                  }}
+                />
+                <p className="text-xs font-semibold line-clamp-1">
+                  {actor.name}
+                </p>
+                <p className="text-xs text-gray-400 line-clamp-1">
+                  {actor.character}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {similar.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold mb-4">
+            {isMovie ? "أفلام مشابهة" : "مسلسلات مشابهة"}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {similar.map((item: any) => (
+              <MediaCard
+                key={item.id}
+                media={item}
+                type={isMovie ? "movie" : "tv"}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {showTrailerModal && trailerKey && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
@@ -285,19 +372,17 @@ export default function MediaDetailPage() {
           >
             <button
               onClick={() => setShowTrailerModal(false)}
-              className="absolute top-2 right-2 z-10 bg-gray-900 rounded-full p-1 hover:bg-gray-700"
+              className="absolute top-3 right-3 z-10 bg-black/60 hover:bg-black text-white p-2 rounded-full"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
-            <div className="relative pb-[56.25%] h-0">
+            <div className="aspect-video">
               <iframe
-                className="absolute top-0 left-0 w-full h-full"
                 src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
-                title="YouTube trailer"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="autoplay; encrypted-media"
                 allowFullScreen
-              ></iframe>
+                className="w-full h-full"
+              />
             </div>
           </div>
         </div>

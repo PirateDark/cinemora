@@ -34,29 +34,33 @@ export default function TvShowsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">📺 TV Shows</h1>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {shows.map((show) => (
-          <MediaCard key={show.id} media={show} type="tv" />
-        ))}
-      </div>
-
+      <h1 className="text-2xl font-bold mb-6">📺 مسلسلات</h1>
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          {shows.map((show) => (
+            <MediaCard key={show.id} media={show} type="tv" />
+          ))}
+        </div>
+      )}
       {totalPages > 0 && (
-        <div className="flex justify-center items-center gap-3 mt-8">
+        <div className="flex justify-center items-center gap-4 mt-10 mb-4">
           <button
             onClick={handlePrev}
-            disabled={currentPage === 1}
-            className="px-4 py-2 bg-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-600 transition"
+            disabled={currentPage === 1 || loading}
+            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg disabled:opacity-40 transition font-semibold"
           >
             السابق
           </button>
-          <span className="text-gray-300">
-            صفحة {currentPage} من {totalPages}
+          <span className="text-gray-300 text-sm">
+            صفحة <span className="text-white font-bold">{currentPage}</span> من{" "}
+            <span className="text-white font-bold">{totalPages}</span>
           </span>
           <button
             onClick={handleNext}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-600 transition"
+            disabled={currentPage === totalPages || loading}
+            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg disabled:opacity-40 transition font-semibold"
           >
             التالي
           </button>

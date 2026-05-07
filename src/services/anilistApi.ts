@@ -27,9 +27,9 @@ interface AnilistDetailResponse {
   };
 }
 
-// استعلام جلب البيانات
+// استعلام جلب البيانات (تم إضافة $format)
 const GET_ANIME_QUERY = `
-  query ($page: Int, $perPage: Int, $type: MediaType, $sort: [MediaSort], $season: MediaSeason, $seasonYear: Int, $status: MediaStatus) {
+  query ($page: Int, $perPage: Int, $type: MediaType, $sort: [MediaSort], $season: MediaSeason, $seasonYear: Int, $status: MediaStatus, $format: MediaFormat) {
     Page(page: $page, perPage: $perPage) {
       pageInfo {
         total
@@ -38,7 +38,7 @@ const GET_ANIME_QUERY = `
         lastPage
         hasNextPage
       }
-      media(type: $type, sort: $sort, season: $season, seasonYear: $seasonYear, status: $status, isAdult: false) {
+      media(type: $type, sort: $sort, season: $season, seasonYear: $seasonYear, status: $status, isAdult: false, format: $format) {
         id
         idMal
         title {
@@ -196,12 +196,63 @@ export const getAnimeByGenre = async (
     });
 
     const allMedia = response.data.data.Page.media;
-    // فلترة النتائج حسب التصنيف
     return allMedia.filter((media: AnilistMedia) =>
       media.genres.includes(genre),
     );
   } catch (error) {
     console.error(`خطأ في جلب الأنمي من تصنيف ${genre}:`, error);
+    return [];
+  }
+};
+
+// ✅ جلب مسلسلات الأنمي (TV فقط)
+export const getAnimeSeries = async (
+  page: number = 1,
+  perPage: number = 20,
+): Promise<AnilistMedia[]> => {
+  try {
+    const variables = {
+      page,
+      perPage,
+      type: "ANIME",
+      sort: ["POPULARITY_DESC"],
+      format: "TV",
+    };
+
+    const response = await axios.post<AnilistRawResponse>(ANILIST_API_URL, {
+      query: GET_ANIME_QUERY,
+      variables,
+    });
+
+    return response.data.data.Page.media;
+  } catch (error) {
+    console.error("خطأ في جلب مسلسلات الأنمي:", error);
+    return [];
+  }
+};
+
+// ✅ جلب أفلام الأنمي (MOVIE فقط)
+export const getAnimeMovies = async (
+  page: number = 1,
+  perPage: number = 20,
+): Promise<AnilistMedia[]> => {
+  try {
+    const variables = {
+      page,
+      perPage,
+      type: "ANIME",
+      sort: ["POPULARITY_DESC"],
+      format: "MOVIE",
+    };
+
+    const response = await axios.post<AnilistRawResponse>(ANILIST_API_URL, {
+      query: GET_ANIME_QUERY,
+      variables,
+    });
+
+    return response.data.data.Page.media;
+  } catch (error) {
+    console.error("خطأ في جلب أفلام الأنمي:", error);
     return [];
   }
 };
