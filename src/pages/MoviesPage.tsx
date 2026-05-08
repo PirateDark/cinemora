@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getPopularMovies, TmdbMovie } from "../services/tmdbApi";
 import MediaCard from "../components/MediaCard";
-import LoadingSpinner from "../components/LoadingSpinner";
+import MediaSkeleton from "../components/MediaSkeleton";
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState<TmdbMovie[]>([]);
@@ -19,6 +19,7 @@ export default function MoviesPage() {
   };
 
   useEffect(() => {
+    document.title = "دراماكسيا | أفلام - أحدث الأفلام العالمية";
     fetchMovies(currentPage);
   }, [currentPage]);
 
@@ -30,15 +31,15 @@ export default function MoviesPage() {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
-  if (loading && movies.length === 0) return <LoadingSpinner />;
-
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">🎬 أفلام</h1>
+      <h1 className="text-2xl font-bold mb-6 tracking-tight">🎬 أفلام</h1>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {movies.map((movie) => (
-          <MediaCard key={movie.id} media={movie} type="movie" />
-        ))}
+        {loading
+          ? Array.from({ length: 12 }).map((_, i) => <MediaSkeleton key={i} />)
+          : movies.map((movie) => (
+              <MediaCard key={movie.id} media={movie} type="movie" />
+            ))}
       </div>
       {totalPages > 0 && (
         <div className="flex justify-center items-center gap-3 mt-8">

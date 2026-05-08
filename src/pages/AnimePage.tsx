@@ -63,6 +63,10 @@ export default function AnimePage() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    document.title = "دراماكسيا | أنمي - عالم الأنمي المترجم";
+  }, []);
+
+  useEffect(() => {
     const fetchAnime = async () => {
       try {
         const [trendingData, popularData, topData, seriesData, moviesData] =
@@ -124,7 +128,7 @@ export default function AnimePage() {
 
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">⭐ الأكثر شعبية</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:widget-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {popular.map((anime) => (
             <AnimeCard key={anime.id} anime={anime} />
           ))}

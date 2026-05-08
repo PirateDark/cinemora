@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios";
 import {
   Home,
   Film,
@@ -17,8 +16,11 @@ import {
   Minimize,
 } from "lucide-react";
 import { getVideoSource } from "../services/proxyApi";
-
-const TMDB_API_KEY = "ff54d7a5fdc2ab56530491ac8d378131";
+import { 
+  getMovieDetails, 
+  getTvShowDetails, 
+  getSeasonDetails 
+} from "../services/tmdbApi";
 
 interface Season {
   season_number: number;
@@ -75,6 +77,7 @@ export default function WatchPage() {
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const isMovie: boolean = type === "movie";
+  const mediaId = parseInt(id || "0");
 
   // جلب الفيديو من الـ Proxy
   const loadVideo = async () => {
@@ -108,67 +111,52 @@ export default function WatchPage() {
   useEffect(() => {
     const fetchMediaDetails = async () => {
       try {
-        const url = isMovie
-          ? `https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}&language=ar`
-          : `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=ar`;
-        const response = await axios.get(url);
-        if (response.data) {
-          setMediaDetails({
-            title: isMovie ? response.data.title : response.data.name,
-            poster: response.data.poster_path
-              ? `https://image.tmdb.org/t/p/w200${response.data.poster_path}`
+        const data = isMovie
+          ? await getMovieDetails(mediaId)
+          : await getTvShowDetails(mediaId);
+        
+        if (data) {
+          const details = {
+            title: isMovie ? data.title : data.name,
+            poster: data.poster_path
+              ? `https://image.tmdb.org/t/p/w200${data.poster_path}`
               : "",
             year: isMovie
-              ? response.data.release_date?.split("-")[0] || "غير معروف"
-              : response.data.first_air_date?.split("-")[0] || "غير معروف",
-            rating: response.data.vote_average?.toFixed(1) || "0",
-            overview: response.data.overview || "لا يوجد وصف متاح",
-            genres: response.data.genres?.map((g: any) => g.name) || [],
-          });
+              ? data.release_date?.split("-")[0] || "غير معروف"
+              : data.first_air_date?.split("-")[0] || "غير معروف",
+            rating: data.vote_average?.toFixed(1) || "0",
+            overview: data.overview || "لا يوجد وصف متاح",
+            genres: data.genres?.map((g: any) => g.name) || [],
+          };
+          setMediaDetails(details);
+          document.title = `دراماكسيا | مشاهدة ${details.title}${!isMovie ? ` - حلقة ${selectedEpisode}` : ""}`;
+          
+          if (!isMovie && data.seasons) {
+            setSeasons(data.seasons);
+          }
         }
+        setLoading(false);
       } catch (err) {
         console.error("فشل في جلب التفاصيل", err);
-      }
-    };
-    if (id) fetchMediaDetails();
-  }, [isMovie, id]);
-
-  // جلب بيانات المسلسل
-  useEffect(() => {
-    if (isMovie) {
-      setLoading(false);
-      return;
-    }
-    const fetchTvDetails = async () => {
-      try {
-        const response = await axios.get(
-          `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=ar`,
-        );
-        setSeasons(response.data.seasons || []);
-        setLoading(false);
-      } catch (err) {
-        console.error("فشل في تحميل بيانات المسلسل", err);
         setLoading(false);
       }
     };
-    if (id) fetchTvDetails();
-  }, [isMovie, id]);
+    if (mediaId) fetchMediaDetails();
+  }, [isMovie, mediaId, selectedEpisode]);
 
   // جلب حلقات الموسم
   useEffect(() => {
-    if (isMovie || !id) return;
+    if (isMovie || !mediaId) return;
     const fetchEpisodes = async () => {
       try {
-        const response = await axios.get(
-          `https://api.themoviedb.org/3/tv/${id}/season/${selectedSeason}?api_key=${TMDB_API_KEY}&language=ar`,
-        );
-        setEpisodes(response.data.episodes || []);
+        const data = await getSeasonDetails(mediaId, selectedSeason);
+        setEpisodes(data.episodes || []);
       } catch (err) {
         console.error("فشل في تحميل الحلقات", err);
       }
     };
     fetchEpisodes();
-  }, [isMovie, id, selectedSeason]);
+  }, [isMovie, mediaId, selectedSeason]);
 
   const handleCustomUrlSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -526,64 +514,75 @@ export default function WatchPage() {
         </div>
 
         {/* الموسم والحلقة للمسلسلات */}
+        {/* الموسم والحلقة للمسلسلات */}
         {!isMovie && seasons.length > 0 && (
-          <div className="bg-gray-800/30 rounded-2xl p-5 mt-2">
-            <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex flex-col gap-6 mt-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-white">الحلقات</h3>
               <select
                 value={selectedSeason}
                 onChange={(e) => {
                   setSelectedSeason(parseInt(e.target.value));
                   setSelectedEpisode(1);
                 }}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white appearance-none cursor-pointer pr-10"
+                className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500"
               >
-                <option>اختر الموسم</option>
-                {seasons.map((season) => (
+                {seasons.filter(s => s.season_number > 0).map((season) => (
                   <option
                     key={season.season_number}
                     value={season.season_number}
                   >
-                    {season.name || `الموسم ${season.season_number}`} (
-                    {season.episode_count} حلقة)
+                    {season.name || `الموسم ${season.season_number}`}
                   </option>
                 ))}
               </select>
+            </div>
 
-              <select
-                value={selectedEpisode}
-                onChange={(e) => setSelectedEpisode(parseInt(e.target.value))}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white appearance-none cursor-pointer pr-10"
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {episodes.map((ep) => (
+                <button
+                  key={ep.episode_number}
+                  onClick={() => setSelectedEpisode(ep.episode_number)}
+                  className={`relative group p-3 rounded-xl border transition-all duration-300 text-right overflow-hidden ${
+                    selectedEpisode === ep.episode_number
+                      ? "bg-rose-600/20 border-rose-600 shadow-[0_0_15px_rgba(225,29,72,0.2)]"
+                      : "bg-gray-800/40 border-gray-700 hover:border-gray-500"
+                  }`}
+                >
+                  <div className="relative z-10">
+                    <span className={`block text-xs mb-1 font-bold ${
+                      selectedEpisode === ep.episode_number ? "text-rose-400" : "text-gray-500"
+                    }`}>
+                      الحلقة {ep.episode_number}
+                    </span>
+                    <p className={`text-xs line-clamp-1 font-medium ${
+                      selectedEpisode === ep.episode_number ? "text-white" : "text-gray-300"
+                    }`}>
+                      {ep.name || `الحلقة ${ep.episode_number}`}
+                    </p>
+                  </div>
+                  {selectedEpisode === ep.episode_number && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-rose-600/10 to-transparent" />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-center gap-4 mt-2">
+              <button
+                onClick={() => setSelectedEpisode((prev) => Math.max(1, prev - 1))}
+                disabled={selectedEpisode <= 1}
+                className="px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition border border-gray-700 text-sm font-bold"
               >
-                <option>اختر الحلقة</option>
-                {episodes.map((ep) => (
-                  <option key={ep.episode_number} value={ep.episode_number}>
-                    الحلقة {ep.episode_number}: {ep.name}
-                  </option>
-                ))}
-              </select>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() =>
-                    setSelectedEpisode((prev) => Math.max(1, prev - 1))
-                  }
-                  disabled={selectedEpisode <= 1}
-                  className="px-4 py-2 bg-gray-700 rounded-lg disabled:opacity-50"
-                >
-                  السابقة
-                </button>
-                <button
-                  onClick={() =>
-                    setSelectedEpisode((prev) =>
-                      Math.min(episodes.length, prev + 1),
-                    )
-                  }
-                  disabled={selectedEpisode >= episodes.length}
-                  className="px-4 py-2 bg-gray-700 rounded-lg disabled:opacity-50"
-                >
-                  التالية
-                </button>
-              </div>
+                الحلقة السابقة
+              </button>
+              <button
+                onClick={() => setSelectedEpisode((prev) => Math.min(episodes.length, prev + 1))}
+                disabled={selectedEpisode >= episodes.length}
+                className="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition text-sm font-bold shadow-lg shadow-rose-600/20"
+              >
+                الحلقة التالية
+              </button>
             </div>
           </div>
         )}

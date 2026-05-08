@@ -10,7 +10,7 @@ import {
   TmdbTvShow,
 } from "../services/tmdbApi";
 import MediaCard from "../components/MediaCard";
-import LoadingSpinner from "../components/LoadingSpinner";
+import MediaSkeleton from "../components/MediaSkeleton";
 import { Play, ChevronLeft, ChevronRight, Star, RefreshCw } from "lucide-react";
 
 function HeroBanner({ movies }: { movies: TmdbMovie[] }) {
@@ -36,73 +36,94 @@ function HeroBanner({ movies }: { movies: TmdbMovie[] }) {
   const movie = featured[current];
 
   return (
-    <div className="relative w-full h-[420px] md:h-[520px] rounded-2xl overflow-hidden mb-12 shadow-2xl">
+    <div className="relative w-full h-[450px] md:h-[600px] rounded-3xl overflow-hidden mb-12 shadow-2xl group">
       <img
         key={movie.id}
-        src={`https://image.tmdb.org/t/p/original${movie.backdrop_path || movie.poster_path}`}
+        src={`https://image.tmdb.org/t/p/w1280${movie.backdrop_path || movie.poster_path}`}
         alt={movie.title}
-        className="w-full h-full object-cover transition-opacity duration-700"
+        className="w-full h-full object-cover transition-all duration-1000 scale-105 group-hover:scale-100"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-transparent" />
+      
+      {/* Cinematic Gradients */}
+      <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-gray-950/80 via-gray-950/20 to-transparent" />
+      <div className="absolute inset-0 bg-black/10" />
 
-      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
-        <div className="max-w-2xl">
+      <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16">
+        <div className="max-w-3xl animate-fadeIn">
           <h2
-            className="text-3xl md:text-5xl font-bold mb-3 text-white drop-shadow-lg text-left"
+            className="text-4xl md:text-6xl font-black mb-4 text-white drop-shadow-2xl text-left tracking-tight"
             dir="ltr"
           >
             {movie.title}
           </h2>
-          <div className="flex items-center gap-3 mb-3">
-            <span className="flex items-center gap-1 text-yellow-400 font-semibold">
-              <Star className="w-4 h-4 fill-yellow-400" />
-              {movie.vote_average?.toFixed(1)}
-            </span>
+          <div className="flex items-center gap-4 mb-5">
+            <div className="flex items-center gap-1.5 bg-rose-600/20 backdrop-blur-md border border-rose-500/30 px-3 py-1 rounded-full">
+              <Star className="w-4 h-4 fill-rose-500 text-rose-500" />
+              <span className="text-rose-500 font-bold text-sm">
+                {movie.vote_average?.toFixed(1)}
+              </span>
+            </div>
             {movie.release_date && (
-              <span className="text-gray-300 text-sm">
+              <span className="text-gray-300 font-medium bg-gray-800/40 backdrop-blur-md px-3 py-1 rounded-full text-sm border border-gray-700/50">
                 {new Date(movie.release_date).getFullYear()}
               </span>
             )}
+            <span className="text-gray-300 font-medium bg-gray-800/40 backdrop-blur-md px-3 py-1 rounded-full text-sm border border-gray-700/50">
+              HD
+            </span>
           </div>
+          
           {movie.overview && (
             <p
-              className="text-gray-300 text-sm md:text-base line-clamp-2 mb-5 text-right leading-relaxed"
+              className="text-gray-200 text-sm md:text-lg line-clamp-3 mb-8 text-right leading-relaxed max-w-2xl ml-auto"
               dir="rtl"
             >
               {movie.overview}
             </p>
           )}
-          <button
-            onClick={() => navigate(`/movie/${movie.id}`)}
-            className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg"
-          >
-            <Play className="w-5 h-5 fill-white" />
-            مشاهدة الآن
-          </button>
+          
+          <div className="flex items-center justify-end md:justify-start gap-4">
+            <button
+              onClick={() => navigate(`/movie/${movie.id}`)}
+              className="flex items-center gap-3 bg-rose-600 hover:bg-rose-500 text-white px-8 py-4 rounded-2xl font-black transition-all hover:scale-105 shadow-xl shadow-rose-600/30 group/btn"
+            >
+              <Play className="w-6 h-6 fill-white group-hover/btn:scale-110 transition-transform" />
+              مشاهدة الآن
+            </button>
+            <button
+               onClick={() => navigate(`/movie/${movie.id}`)}
+               className="hidden md:flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-8 py-4 rounded-2xl font-black transition-all border border-white/10"
+            >
+              التفاصيل
+            </button>
+          </div>
         </div>
       </div>
 
-      <button
-        onClick={prev}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full transition"
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
-      <button
-        onClick={next}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full transition"
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
+      {/* Navigation Controls */}
+      <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+        <button
+          onClick={prev}
+          className="bg-black/20 hover:bg-rose-600 backdrop-blur-xl text-white p-4 rounded-2xl transition-all border border-white/10 hover:border-rose-500 active:scale-95"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <button
+          onClick={next}
+          className="bg-black/20 hover:bg-rose-600 backdrop-blur-xl text-white p-4 rounded-2xl transition-all border border-white/10 hover:border-rose-500 active:scale-95"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      </div>
 
-      <div className="absolute bottom-4 right-6 flex gap-2">
+      <div className="absolute bottom-8 right-16 flex gap-3">
         {featured.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              i === current ? "bg-rose-500 w-6" : "bg-white/50"
+            className={`h-1.5 rounded-full transition-all duration-500 ${
+              i === current ? "w-8 bg-rose-600 shadow-lg shadow-rose-600/50" : "w-2 bg-white/30 hover:bg-white/50"
             }`}
           />
         ))}
@@ -125,12 +146,16 @@ function Section({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  useEffect(() => {
+    document.title = "دراماكسيا | الرئيسية - عالم الدراما والسينما";
+  }, []);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(false);
     try {
       const data = await fetcher();
-      setItems(data.results);
+      setItems(data.results.slice(0, 12));
     } catch {
       setError(true);
     } finally {
@@ -144,29 +169,25 @@ function Section({
 
   return (
     <section className="mb-12">
-      <h2 className="text-2xl font-bold mb-4">{title}</h2>
-      {loading && (
-        <div className="flex justify-center py-8">
-          <LoadingSpinner />
-        </div>
-      )}
-      {error && (
-        <div className="flex items-center justify-center gap-3 py-6 text-gray-400">
+      <h2 className="text-2xl font-black mb-6 tracking-tight text-white">{title}</h2>
+      {error ? (
+        <div className="flex items-center justify-center gap-3 py-10 bg-gray-800/20 rounded-2xl border border-gray-800/50 text-gray-400">
           <span>فشل تحميل هذا القسم</span>
           <button
             onClick={load}
-            className="flex items-center gap-1 text-rose-400 hover:text-rose-300 transition"
+            className="flex items-center gap-1 text-rose-400 hover:text-rose-300 transition font-bold"
           >
             <RefreshCw className="w-4 h-4" />
             إعادة المحاولة
           </button>
         </div>
-      )}
-      {!loading && !error && (
+      ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {items.map((item) => (
-            <MediaCard key={item.id} media={item} type={type} />
-          ))}
+          {loading
+            ? Array.from({ length: 6 }).map((_, i) => <MediaSkeleton key={i} />)
+            : items.map((item) => (
+                <MediaCard key={item.id} media={item} type={type} />
+              ))}
         </div>
       )}
     </section>
@@ -185,11 +206,9 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div>
+    <div className="space-y-4">
       {heroLoading ? (
-        <div className="flex justify-center py-16">
-          <LoadingSpinner />
-        </div>
+        <div className="w-full h-[450px] md:h-[600px] rounded-3xl bg-gray-800 animate-pulse mb-12" />
       ) : (
         <HeroBanner movies={popularMovies} />
       )}

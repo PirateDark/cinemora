@@ -1,24 +1,11 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import MediaCard from "../components/MediaCard";
-import LoadingSpinner from "../components/LoadingSpinner";
+import MediaSkeleton from "../components/MediaSkeleton";
 import ErrorState from "../components/ErrorState";
-
-const TMDB_API_KEY = "ff54d7a5fdc2ab56530491ac8d378131";
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
-
-interface TurkishMovie {
-  id: number;
-  title: string;
-  poster_path: string;
-  backdrop_path?: string;
-  vote_average: number;
-  release_date?: string;
-  overview: string;
-}
+import { getTurkishMovies, TmdbMovie } from "../services/tmdbApi";
 
 export default function TurkishMoviesPage() {
-  const [movies, setMovies] = useState<TurkishMovie[]>([]);
+  const [movies, setMovies] = useState<TmdbMovie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,39 +14,9 @@ export default function TurkishMoviesPage() {
   const fetchMovies = async (pageNum: number) => {
     setLoading(true);
     try {
-      const [enRes, arRes] = await Promise.all([
-        axios.get(`${TMDB_BASE_URL}/discover/movie`, {
-          params: {
-            api_key: TMDB_API_KEY,
-            with_origin_country: "TR",
-            sort_by: "popularity.desc",
-            language: "en",
-            page: pageNum,
-          },
-        }),
-        axios.get(`${TMDB_BASE_URL}/discover/movie`, {
-          params: {
-            api_key: TMDB_API_KEY,
-            with_origin_country: "TR",
-            sort_by: "popularity.desc",
-            language: "ar",
-            page: pageNum,
-          },
-        }),
-      ]);
-
-      const merged = enRes.data.results.map((enMovie: TurkishMovie) => {
-        const arMovie = arRes.data.results.find(
-          (s: TurkishMovie) => s.id === enMovie.id,
-        );
-        return {
-          ...enMovie,
-          overview: arMovie?.overview || enMovie.overview,
-        };
-      });
-
-      setMovies(merged);
-      setTotalPages(enRes.data.total_pages);
+      const response = await getTurkishMovies(pageNum);
+      setMovies(response.results);
+      setTotalPages(response.total_pages);
     } catch (err) {
       console.error(err);
       setError(true);
@@ -67,8 +24,8 @@ export default function TurkishMoviesPage() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
+    document.title = "دراماكسيا | أفلام تركية - أحدث الأفلام التركية المترجمة";
     fetchMovies(currentPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
@@ -81,16 +38,17 @@ export default function TurkishMoviesPage() {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
-  if (loading && movies.length === 0) return <LoadingSpinner />;
   if (error) return <ErrorState message="فشل تحميل الأفلام التركية" />;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">🎬 أفلام تركية</h1>
+      <h1 className="text-2xl font-black mb-6 tracking-tight text-white">🎬 أفلام تركية</h1>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {movies.map((movie) => (
-          <MediaCard key={movie.id} media={movie} type="movie" />
-        ))}
+        {loading
+          ? Array.from({ length: 12 }).map((_, i) => <MediaSkeleton key={i} />)
+          : movies.map((movie) => (
+              <MediaCard key={movie.id} media={movie} type="movie" />
+            ))}
       </div>
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-3 mt-8">

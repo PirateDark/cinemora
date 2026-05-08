@@ -1,0 +1,1 @@
+import{j as e}from"./index-BqBY46Sv.js";function o({message:t}){return e.jsxs("div",{className:"text-center py-20",children:[e.jsx("p",{className:"text-red-400 text-lg",children:t}),e.jsx("button",{onClick:()=>window.location.reload(),className:"mt-4 px-4 py-2 bg-rose-600 rounded-lg hover:bg-rose-700 transition",children:"إعادة المحاولة"})]})}export{o as E};

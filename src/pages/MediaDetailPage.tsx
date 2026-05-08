@@ -67,14 +67,11 @@ export default function MediaDetailPage() {
     setShowTrailerModal(false);
   }, [mediaId, type]);
 
-  if (!isValidType || isNaN(mediaId)) {
-    return <ErrorState message={`رابط غير صالح: /${type}/${id}`} />;
-  }
-
   const isMovie = type === "movie";
 
   useEffect(() => {
     const fetchMedia = async () => {
+      if (!isValidType || isNaN(mediaId)) return;
       if (media && media.id === mediaId) return;
       setLoading(true);
       setErrorMsg("");
@@ -86,6 +83,7 @@ export default function MediaDetailPage() {
         ]);
         if (data) {
           setMedia(data);
+          document.title = `دراماكسيا | ${isMovie ? data.title : data.name}`;
           setSimilar(similarData || []);
           setCast(castData || []);
           addToWatchHistory({
@@ -106,11 +104,11 @@ export default function MediaDetailPage() {
     };
     fetchMedia();
     window.scrollTo(0, 0);
-  }, [mediaId, isMovie, media]);
+  }, [mediaId, isMovie, media, isValidType]);
 
   useEffect(() => {
     const fetchTrailer = async () => {
-      if (!mediaId) return;
+      if (!mediaId || !isValidType) return;
       try {
         const key = await getOfficialTrailerKey(
           isMovie ? "movie" : "tv",
@@ -125,7 +123,11 @@ export default function MediaDetailPage() {
     if (mediaId && !loading) {
       fetchTrailer();
     }
-  }, [mediaId, isMovie, loading]);
+  }, [mediaId, isMovie, loading, isValidType]);
+
+  if (!isValidType || isNaN(mediaId)) {
+    return <ErrorState message={`رابط غير صالح: /${type}/${id}`} />;
+  }
 
   const handleFavorite = () => {
     if (!media) return;
@@ -220,7 +222,7 @@ export default function MediaDetailPage() {
     <div className="container mx-auto px-4 py-6">
       <div className="relative rounded-xl overflow-hidden bg-gray-900">
         <img
-          src={`https://image.tmdb.org/t/p/original${backdropPath || posterPath}`}
+          src={`https://image.tmdb.org/t/p/w1280${backdropPath || posterPath}`}
           alt={title}
           className="w-full h-64 md:h-96 object-cover opacity-30"
         />

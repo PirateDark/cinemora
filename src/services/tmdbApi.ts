@@ -1,7 +1,6 @@
 import axios from "axios";
-
-const TMDB_API_KEY = "ff54d7a5fdc2ab56530491ac8d378131";
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+import { TMDB_API_KEY, TMDB_BASE_URL } from "./apiClient";
+import { getCache, setCache } from "../utils/cache";
 
 export interface TmdbMovie {
   id: number;
@@ -43,6 +42,10 @@ const mergeTvResults = (enResults: TmdbTvShow[], arResults: TmdbTvShow[]) => {
 };
 
 export const getPopularMovies = async (page = 1) => {
+  const cacheKey = `popular_movies_${page}`;
+  const cached = getCache<{ results: TmdbMovie[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
   const [enRes, arRes] = await Promise.all([
     axios.get(`${TMDB_BASE_URL}/movie/popular`, {
       params: { api_key: TMDB_API_KEY, page, language: "en" },
@@ -51,13 +54,21 @@ export const getPopularMovies = async (page = 1) => {
       params: { api_key: TMDB_API_KEY, page, language: "ar" },
     }),
   ]);
-  return {
+  
+  const result = {
     results: mergeMovieResults(enRes.data.results, arRes.data.results),
     total_pages: enRes.data.total_pages,
   };
+
+  setCache(cacheKey, result);
+  return result;
 };
 
 export const getPopularTvShows = async (page = 1) => {
+  const cacheKey = `popular_tv_${page}`;
+  const cached = getCache<{ results: TmdbTvShow[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
   const [enRes, arRes] = await Promise.all([
     axios.get(`${TMDB_BASE_URL}/tv/popular`, {
       params: { api_key: TMDB_API_KEY, page, language: "en" },
@@ -66,10 +77,14 @@ export const getPopularTvShows = async (page = 1) => {
       params: { api_key: TMDB_API_KEY, page, language: "ar" },
     }),
   ]);
-  return {
+
+  const result = {
     results: mergeTvResults(enRes.data.results, arRes.data.results),
     total_pages: enRes.data.total_pages,
   };
+
+  setCache(cacheKey, result);
+  return result;
 };
 
 export const getMovieDetails = async (id: number) => {
@@ -157,9 +172,74 @@ export const getOfficialTrailerKey = async (
   }
 };
 
-export const getTopRatedMovies = getPopularMovies;
-export const getUpcomingMovies = getPopularMovies;
-export const getTopRatedTvShows = getPopularTvShows;
+export const getTopRatedMovies = async (page = 1) => {
+  const cacheKey = `top_rated_movies_${page}`;
+  const cached = getCache<{ results: TmdbMovie[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/movie/top_rated`, {
+      params: { api_key: TMDB_API_KEY, page, language: "en" },
+    }),
+    axios.get(`${TMDB_BASE_URL}/movie/top_rated`, {
+      params: { api_key: TMDB_API_KEY, page, language: "ar" },
+    }),
+  ]);
+  
+  const result = {
+    results: mergeMovieResults(enRes.data.results, arRes.data.results),
+    total_pages: enRes.data.total_pages,
+  };
+
+  setCache(cacheKey, result);
+  return result;
+};
+
+export const getUpcomingMovies = async (page = 1) => {
+  const cacheKey = `upcoming_movies_${page}`;
+  const cached = getCache<{ results: TmdbMovie[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/movie/upcoming`, {
+      params: { api_key: TMDB_API_KEY, page, language: "en" },
+    }),
+    axios.get(`${TMDB_BASE_URL}/movie/upcoming`, {
+      params: { api_key: TMDB_API_KEY, page, language: "ar" },
+    }),
+  ]);
+
+  const result = {
+    results: mergeMovieResults(enRes.data.results, arRes.data.results),
+    total_pages: enRes.data.total_pages,
+  };
+
+  setCache(cacheKey, result);
+  return result;
+};
+
+export const getTopRatedTvShows = async (page = 1) => {
+  const cacheKey = `top_rated_tv_${page}`;
+  const cached = getCache<{ results: TmdbTvShow[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/tv/top_rated`, {
+      params: { api_key: TMDB_API_KEY, page, language: "en" },
+    }),
+    axios.get(`${TMDB_BASE_URL}/tv/top_rated`, {
+      params: { api_key: TMDB_API_KEY, page, language: "ar" },
+    }),
+  ]);
+
+  const result = {
+    results: mergeTvResults(enRes.data.results, arRes.data.results),
+    total_pages: enRes.data.total_pages,
+  };
+
+  setCache(cacheKey, result);
+  return result;
+};
 
 export const searchMulti = async (query: string) => {
   const [enRes, arRes] = await Promise.all([
@@ -177,4 +257,136 @@ export const searchMulti = async (query: string) => {
     const arItem = arMap.get(item.id) as any;
     return { ...item, overview: arItem?.overview || item.overview };
   });
+};
+
+export const getAsianShows = async (country: string, page = 1) => {
+  const cacheKey = `asian_shows_${country}_${page}`;
+  const cached = getCache<{ results: TmdbTvShow[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/discover/tv`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_origin_country: country,
+        sort_by: "popularity.desc",
+        language: "en",
+        page,
+      },
+    }),
+    axios.get(`${TMDB_BASE_URL}/discover/tv`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_origin_country: country,
+        sort_by: "popularity.desc",
+        language: "ar",
+        page,
+      },
+    }),
+  ]);
+
+  const result = {
+    results: mergeTvResults(enRes.data.results, arRes.data.results),
+    total_pages: enRes.data.total_pages,
+  };
+
+  setCache(cacheKey, result);
+  return result;
+};
+
+export const getTurkishMovies = async (page = 1) => {
+  const cacheKey = `turkish_movies_${page}`;
+  const cached = getCache<{ results: TmdbMovie[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/discover/movie`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_origin_country: "TR",
+        sort_by: "popularity.desc",
+        language: "en",
+        page,
+      },
+    }),
+    axios.get(`${TMDB_BASE_URL}/discover/movie`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_origin_country: "TR",
+        sort_by: "popularity.desc",
+        language: "ar",
+        page,
+      },
+    }),
+  ]);
+
+  const result = {
+    results: mergeMovieResults(enRes.data.results, arRes.data.results),
+    total_pages: enRes.data.total_pages,
+  };
+
+  setCache(cacheKey, result);
+  return result;
+};
+
+export const getTurkishShows = async (page = 1) => {
+  const cacheKey = `turkish_shows_${page}`;
+  const cached = getCache<{ results: TmdbTvShow[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/discover/tv`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_origin_country: "TR",
+        sort_by: "popularity.desc",
+        language: "en",
+        page,
+      },
+    }),
+    axios.get(`${TMDB_BASE_URL}/discover/tv`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_origin_country: "TR",
+        sort_by: "popularity.desc",
+        language: "ar",
+        page,
+      },
+    }),
+  ]);
+
+  const result = {
+    results: mergeTvResults(enRes.data.results, arRes.data.results),
+    total_pages: enRes.data.total_pages,
+  };
+
+  setCache(cacheKey, result);
+  return result;
+};
+
+export const getSeasonDetails = async (tvId: number, seasonNumber: number) => {
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/tv/${tvId}/season/${seasonNumber}`, {
+      params: { api_key: TMDB_API_KEY, language: "en" },
+    }),
+    axios.get(`${TMDB_BASE_URL}/tv/${tvId}/season/${seasonNumber}`, {
+      params: { api_key: TMDB_API_KEY, language: "ar" },
+    }),
+  ]);
+  
+  const mergedEpisodes = enRes.data.episodes.map((enEp: any) => {
+    const arEp = arRes.data.episodes.find((s: any) => s.id === enEp.id);
+    return {
+      ...enEp,
+      overview: arEp?.overview || enEp.overview,
+      name: arEp?.name || enEp.name
+    };
+  });
+
+  return {
+    ...enRes.data,
+    name: arRes.data.name || enRes.data.name,
+    overview: arRes.data.overview || enRes.data.overview,
+    episodes: mergedEpisodes
+  };
 };

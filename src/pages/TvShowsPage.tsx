@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getPopularTvShows, TmdbTvShow } from "../services/tmdbApi";
 import MediaCard from "../components/MediaCard";
-import LoadingSpinner from "../components/LoadingSpinner";
+import MediaSkeleton from "../components/MediaSkeleton";
 
 export default function TvShowsPage() {
   const [shows, setShows] = useState<TmdbTvShow[]>([]);
@@ -19,6 +19,7 @@ export default function TvShowsPage() {
   };
 
   useEffect(() => {
+    document.title = "دراماكسيا | مسلسلات - أفضل المسلسلات العالمية والمحلية";
     fetchShows(currentPage);
   }, [currentPage]);
 
@@ -30,20 +31,16 @@ export default function TvShowsPage() {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
-  if (loading && shows.length === 0) return <LoadingSpinner />;
-
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">📺 مسلسلات</h1>
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {shows.map((show) => (
-            <MediaCard key={show.id} media={show} type="tv" />
-          ))}
-        </div>
-      )}
+      <h1 className="text-2xl font-bold mb-6 tracking-tight">📺 مسلسلات</h1>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        {loading
+          ? Array.from({ length: 12 }).map((_, i) => <MediaSkeleton key={i} />)
+          : shows.map((show) => (
+              <MediaCard key={show.id} media={show} type="tv" />
+            ))}
+      </div>
       {totalPages > 0 && (
         <div className="flex justify-center items-center gap-4 mt-10 mb-4">
           <button

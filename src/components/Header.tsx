@@ -43,6 +43,11 @@ export default function Header() {
   }, [debouncedQuery, navigate]);
 
   useEffect(() => {
+    setIsMenuOpen(false);
+    setOpenDropdown(null);
+  }, [location.pathname]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
       if (
