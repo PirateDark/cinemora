@@ -232,12 +232,25 @@ export default function Header() {
           </div>
         </div>
 
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition"
-        >
-          {isMenuOpen ? <X /> : <Menu />}
-        </button>
+        <div className="md:hidden flex items-center gap-1">
+          <button
+            onClick={toggleEnabled}
+            className={`p-2 rounded-lg transition-all ${
+              settings.enabled
+                ? "text-emerald-400 bg-emerald-600/20"
+                : "text-gray-400 hover:text-white hover:bg-white/10"
+            }`}
+            title={settings.enabled ? "الوضع العائلي مفعل" : "تفعيل الوضع العائلي"}
+          >
+            {settings.enabled ? <ShieldCheck className="w-5 h-5" /> : <Users className="w-5 h-5" />}
+          </button>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="text-white p-2 hover:bg-white/10 rounded-lg transition"
+          >
+            {isMenuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
       </div>
 
       {isMenuOpen && (
