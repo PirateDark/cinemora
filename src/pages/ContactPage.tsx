@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Send, CheckCircle } from "lucide-react";
+import { useToast } from "../components/Toast";
 
 export default function ContactPage() {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -23,14 +25,16 @@ export default function ContactPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // محاكاة إرسال البيانات (يمكنك استبدال هذا بـ API حقيقي)
-    setTimeout(() => {
-      console.log("بيانات النموذج:", formData);
-      setIsSubmitted(true);
-      setIsLoading(false);
-      setFormData({ name: "", email: "", subject: "", message: "" });
-      setTimeout(() => setIsSubmitted(false), 5000);
-    }, 1000);
+    // تخزين الرسالة محلياً إلى أن يتوفر backend
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    const messages = JSON.parse(localStorage.getItem("contact_messages") || "[]");
+    messages.push({ ...formData, timestamp: new Date().toISOString() });
+    localStorage.setItem("contact_messages", JSON.stringify(messages));
+    setIsSubmitted(true);
+    setIsLoading(false);
+    setFormData({ name: "", email: "", subject: "", message: "" });
+    toast("تم إرسال رسالتك بنجاح!");
+    setTimeout(() => setIsSubmitted(false), 5000);
   };
 
   return (

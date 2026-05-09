@@ -8,7 +8,7 @@ export const addToWatchHistory = (item: {
   const history = stored ? JSON.parse(stored) : [];
 
   const filtered = history.filter(
-    (h: any) => !(h.id === item.id && h.type === item.type),
+    (h: { id: number; type: string }) => !(h.id === item.id && h.type === item.type),
   );
 
   const updated = [{ ...item, watchedAt: Date.now() }, ...filtered].slice(

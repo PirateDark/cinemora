@@ -1,17 +1,73 @@
-// src/pages/AnimeDetailPage.tsx
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { getAnimeDetails } from "../services/anilistApi";
+import { useParams, useNavigate } from "react-router-dom";
+import { getAnimeDetails, getAnimeByGenre } from "../services/anilistApi";
 import { AnilistMedia } from "../types/anilist";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorState from "../components/ErrorState";
-import { Play, Star, Calendar, Clock } from "lucide-react";
+import AnimeCard from "../components/AnimeCard";
+import SEO from "../components/SEO";
+import { useFavorites } from "../hooks/useFavorites";
+import { useWatchlist } from "../hooks/useWatchlist";
+import { addToWatchHistory } from "../hooks/useWatchHistory";
+import { useToast } from "../components/Toast";
+import { getVideoSource } from "../services/proxyApi";
+import { translateToArabic } from "../utils/translate";
+import { Play, Star, Calendar, Clock, Heart, Bookmark, Download } from "lucide-react";
+
+const genreMap: Record<string, string> = {
+  Action: "أكشن",
+  Adventure: "مغامرة",
+  Comedy: "كوميديا",
+  Drama: "دراما",
+  Fantasy: "خيال",
+  Horror: "رعب",
+  Romance: "رومانسية",
+  SciFi: "خيال علمي",
+  SliceOfLife: "شريحة من الحياة",
+  Sports: "رياضة",
+  Supernatural: "خارق للطبيعة",
+  Thriller: "إثارة",
+  Mystery: "غموض",
+  Psychological: "نفسي",
+  Mecha: "ميكا",
+  Music: "موسيقى",
+  Seinen: "سينين",
+  Shounen: "شونين",
+  Josei: "جوسي",
+  Shoujo: "شوجو",
+  Ecchi: "إيتشي",
+  Harem: "حريم",
+  Isekai: "عالم آخر",
+  Magic: "سحر",
+  Military: "عسكري",
+  Parody: "محاكاة ساخرة",
+  Samurai: "ساموراي",
+  Space: "فضاء",
+  SuperPower: "قوى خارقة",
+  Vampire: "مصاص دماء",
+  Historical: "تاريخي",
+  Demons: "شياطين",
+  Kids: "أطفال",
+  School: "مدرسة",
+  AnimeInfluenced: "متأثر بالأنمي",
+};
+
+function translateGenre(genre: string): string {
+  return genreMap[genre] || genre;
+}
 
 export default function AnimeDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [anime, setAnime] = useState<AnilistMedia | null>(null);
+  const [similar, setSimilar] = useState<AnilistMedia[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+  const { isInWatchlist, addToWatchlist, removeFromWatchlist } = useWatchlist();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchAnime = async () => {
@@ -21,12 +77,25 @@ export default function AnimeDetailPage() {
         const data = await getAnimeDetails(parseInt(id));
         if (data) {
           setAnime(data);
-          setError(false);
+          addToWatchHistory({
+            id: data.idMal || data.id,
+            type: "tv",
+            title: data.title.english || data.title.romaji || data.title.native || "",
+            poster_path: data.coverImage?.large || "",
+          });
+
+          const rawDesc = data.description?.replace(/<[^>]*>/g, "") || "";
+          if (rawDesc) translateToArabic(rawDesc).then(setTranslatedDesc);
+
+          const genre = data.genres?.[0];
+          if (genre) {
+            const similarData = await getAnimeByGenre(genre, 1, 12);
+            setSimilar(similarData.filter((a) => a.id !== data.id).slice(0, 12));
+          }
         } else {
           setError(true);
         }
-      } catch (err) {
-        console.error(err);
+      } catch {
         setError(true);
       } finally {
         setLoading(false);
@@ -39,85 +108,160 @@ export default function AnimeDetailPage() {
   if (error) return <ErrorState message="فشل تحميل بيانات الأنمي" />;
   if (!anime) return <ErrorState message="لم يتم العثور على الأنمي" />;
 
-  const title =
-    anime.title.romaji ||
-    anime.title.english ||
-    anime.title.native ||
-    "بدون عنوان";
+  const title = anime.title.english || anime.title.romaji || anime.title.native || "بدون عنوان";
   const imageUrl = anime.coverImage?.large || anime.coverImage?.medium || "";
   const bannerUrl = anime.bannerImage || imageUrl;
   const score = anime.averageScore ? (anime.averageScore / 10).toFixed(1) : "?";
-  const year = anime.seasonYear || "غير معروف";
-  const episodes = anime.episodes || "غير معروف";
-  const description =
-    anime.description?.replace(/<[^>]*>/g, "") || "لا يوجد وصف";
+  const year = anime.seasonYear || undefined;
+  const episodes = anime.episodes || undefined;
+  const description = anime.description?.replace(/<[^>]*>/g, "") || "لا يوجد وصف";
+
+  const mediaItem = {
+    id: anime.idMal || anime.id,
+    mal_id: anime.id,
+    title,
+    name: title,
+    poster_path: anime.coverImage?.large || "",
+    backdrop_path: anime.bannerImage || "",
+    vote_average: anime.averageScore ? anime.averageScore / 10 : 0,
+    overview: description,
+    release_date: anime.seasonYear ? `${anime.seasonYear}-01-01` : "",
+    genre_ids: [],
+    type: "tv" as const,
+    score: anime.averageScore || 0,
+    images: {
+      jpg: {
+        image_url: anime.coverImage?.large || "",
+        large_image_url: anime.bannerImage || anime.coverImage?.large || "",
+      },
+    },
+  };
+
+  const handleFavorite = () => {
+    if (isFavorite(anime.id)) {
+      removeFavorite(anime.id);
+      toast("تمت الإزالة من المفضلة");
+    } else {
+      addFavorite(mediaItem);
+      toast("تمت الإضافة إلى المفضلة");
+    }
+  };
+
+  const handleWatchlist = () => {
+    if (isInWatchlist(anime.id)) {
+      removeFromWatchlist(anime.id);
+      toast("تمت الإزالة من قائمة المشاهدة");
+    } else {
+      addToWatchlist(mediaItem);
+      toast("تمت الإضافة إلى قائمة المشاهدة");
+    }
+  };
+
+  const handleWatch = () => {
+    navigate(`/watch/tv/${anime.idMal && anime.idMal > 0 ? anime.idMal : anime.id}/1/1`);
+  };
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    const videoSource = await getVideoSource("tv", String(anime.idMal || anime.id), 1, 1);
+    if (videoSource?.url) window.open(videoSource.url, "_blank");
+    else toast("لم يتم العثور على رابط للتحميل");
+    setDownloading(false);
+  };
 
   return (
     <div className="container mx-auto px-4 py-6">
+      <SEO title={title} />
       <div className="relative rounded-xl overflow-hidden bg-gray-900">
         <img
           src={bannerUrl}
           alt={title}
+          loading="lazy"
           className="w-full h-64 md:h-96 object-cover opacity-30"
         />
         <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col md:flex-row items-center md:items-start gap-6 p-6">
           <img
             src={imageUrl}
             alt={title}
+            loading="lazy"
             className="w-48 md:w-64 rounded-lg shadow-lg"
           />
           <div className="flex-1 text-center md:text-right">
             <h1 className="text-3xl md:text-4xl font-bold mb-2">{title}</h1>
-
             <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-4">
               <div className="flex items-center gap-1">
                 <Star className="w-5 h-5 text-yellow-400" />
                 <span>{score}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="w-5 h-5" />
-                <span>{year}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="w-5 h-5" />
-                <span>{episodes} حلقة</span>
-              </div>
+              {year && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-5 h-5" />
+                  <span>{year}</span>
+                </div>
+              )}
+              {episodes && (
+                <div className="flex items-center gap-1">
+                  <Clock className="w-5 h-5" />
+                  <span>{episodes} حلقة</span>
+                </div>
+              )}
             </div>
-
+            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-4">
+              <button
+                onClick={handleWatch}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg transition"
+              >
+                <Play className="w-5 h-5" /> مشاهدة
+              </button>
+              <button
+                onClick={handleDownload}
+                disabled={downloading}
+                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg disabled:opacity-50 transition"
+              >
+                <Download className="w-5 h-5" />
+                {downloading ? "جاري التجهيز..." : "تحميل"}
+              </button>
+              <button
+                onClick={handleFavorite}
+                className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 px-4 py-2 rounded-lg transition"
+              >
+                <Heart className={`w-5 h-5 ${isFavorite(anime.id) ? "fill-white" : ""}`} />
+                {isFavorite(anime.id) ? "تمت الإضافة" : "أضف للمفضلة"}
+              </button>
+              <button
+                onClick={handleWatchlist}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition"
+              >
+                <Bookmark className={`w-5 h-5 ${isInWatchlist(anime.id) ? "fill-white" : ""}`} />
+                {isInWatchlist(anime.id) ? "في قائمة المشاهدة" : "أضف لقائمة المشاهدة"}
+              </button>
+            </div>
             {anime.genres && anime.genres.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {anime.genres.map((genre) => (
-                  <span
-                    key={genre}
-                    className="bg-gray-800 px-2 py-1 rounded-full text-sm"
-                  >
-                    {genre}
+                  <span key={genre} className="bg-gray-800 px-2 py-1 rounded-full text-sm">
+                    {translateGenre(genre)}
                   </span>
                 ))}
               </div>
             )}
-
             <p className="text-gray-300 leading-relaxed max-h-40 overflow-y-auto">
-              {description}
+              {translatedDesc || description}
             </p>
-
-            <div className="mt-6 flex gap-3 flex-wrap">
-              <Link
-                to="/anime"
-                className="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-600 px-5 py-2 rounded-lg transition"
-              >
-                ← العودة إلى الأنمي
-              </Link>
-              <Link
-                to={`/watch/tv/${anime.idMal || anime.id}/1/1`}
-                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg transition"
-              >
-                <Play className="w-5 h-5" /> مشاهدة الأنمي
-              </Link>
-            </div>
           </div>
         </div>
       </div>
+
+      {similar.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold mb-4">أنمي مشابه</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {similar.map((item) => (
+              <AnimeCard key={item.id} anime={item} type={item.format === "MOVIE" ? "movie" : "series"} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

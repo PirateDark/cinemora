@@ -1,24 +1,23 @@
-// src/types/index.ts
-
-export interface Anime {
-  mal_id: number; // سيستخدم TMDB id
-  title: string; // الاسم بالعربية من TMDB
-  title_japanese?: string; // original_name من TMDB
-  images: {
+export interface MediaItem {
+  id: number;
+  mal_id: number;
+  title?: string;
+  name?: string;
+  poster_path?: string;
+  backdrop_path?: string;
+  vote_average?: number;
+  overview?: string;
+  release_date?: string;
+  first_air_date?: string;
+  genre_ids?: number[];
+  type?: "movie" | "tv";
+  score?: number;
+  images?: {
     jpg: {
       image_url: string;
       large_image_url: string;
     };
   };
-  score: number; // vote_average
-  episodes?: number; // number_of_episodes
-  duration?: string; // مشتق من number_of_seasons
-  status?: string; // status من TMDB
-  year?: number; // من first_air_date
-  synopsis?: string; // overview
-  genres?: Array<{ mal_id: number; name: string; type?: string }>; // type اختياري
-  studios?: Array<{ name: string }>; // يمكن تركه فارغاً أو إضافته لاحقاً
-  type?: string; // 'TV' أو غيره
 }
 
 export interface NewsItem {

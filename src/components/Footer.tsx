@@ -1,81 +1,122 @@
 import { Link } from "react-router-dom";
-import { Film, Tv, Heart, Bookmark, Clock, Mail, Shield } from "lucide-react";
+import { ArrowUp, Globe, Shield, Zap } from "lucide-react";
+
+const groups = [
+  {
+    label: "المحتوى",
+    links: [
+      { name: "أفلام عالمية", path: "/movies" },
+      { name: "مسلسلات عالمية", path: "/tv" },
+      { name: "مسلسلات أنمي", path: "/anime/series" },
+      { name: "أفلام أنمي", path: "/anime/movies" },
+    ],
+  },
+  {
+    label: "المناطق",
+    links: [
+      { name: "أفلام عربية", path: "/movies/arabic" },
+      { name: "مسلسلات عربية", path: "/tv/arabic" },
+      { name: "مسلسلات تركية", path: "/tv/turkish" },
+      { name: "أفلام تركية", path: "/movies/turkish" },
+      { name: "دراما آسيوية", path: "/asian" },
+      { name: "أفلام آسيوية", path: "/movies/asian" },
+    ],
+  },
+  {
+    label: "المستخدم",
+    links: [
+      { name: "المفضلة", path: "/favorites" },
+      { name: "قائمة المشاهدة", path: "/watchlist" },
+      { name: "سجل المشاهدة", path: "/history" },
+    ],
+  },
+  {
+    label: "معلومات",
+    links: [
+      { name: "تواصل معنا", path: "/contact" },
+      { name: "سياسة الخصوصية", path: "/privacy" },
+    ],
+  },
+];
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 border-t border-gray-800 mt-20">
-      <div className="container mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-          {/* الشعار والوصف */}
-          <div className="text-right">
-            <h2 className="text-3xl font-black bg-gradient-to-l from-rose-500 to-rose-700 bg-clip-text text-transparent mb-5 tracking-tight">
-              دراماكسيا
-            </h2>
-            <p className="text-gray-400 text-sm leading-7 max-w-sm ml-auto">
-              عالمك المتكامل لمشاهدة أحدث الأفلام والمسلسلات بجودة فائقة. نجمع لك أفضل المحتوى العربي والعالمي، والتركي، والآسيوي، والأنمي في مكان واحد مع تجربة مستخدم استثنائية.
-            </p>
-          </div>
+    <footer className="relative bg-gradient-to-b from-gray-900 to-black border-t border-gray-800/60 mt-20 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-500/5 via-transparent to-transparent pointer-events-none" />
 
-          {/* روابط سريعة */}
-          <div className="text-right">
-            <h3 className="text-white font-black mb-6 text-lg">اكتشف المحتوى</h3>
-            <ul className="space-y-3">
-              {[
-                { name: "أفلام عالمية", path: "/movies", icon: Film },
-                { name: "مسلسلات عالمية", path: "/tv", icon: Tv },
-                { name: "عالم الأنمي", path: "/anime", icon: null, emoji: "🎌" },
-                { name: "دراما آسيوية", path: "/asian", icon: null, emoji: "🍜" },
-                { name: "أفلام تركية", path: "/movies/turkish", icon: null, emoji: "🎭" },
-                { name: "مسلسلات تركية", path: "/tv/turkish", icon: null, emoji: "🎬" },
-              ].map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="flex items-center gap-2.5 text-gray-400 hover:text-rose-500 transition-colors duration-300 text-sm justify-end font-medium group"
-                  >
-                    <span className="group-hover:translate-x-[-4px] transition-transform">{link.name}</span>
-                    {link.icon ? <link.icon className="w-4 h-4 opacity-70" /> : <span className="text-xs">{link.emoji}</span>}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* حسابي والدعم */}
-          <div className="text-right">
-            <h3 className="text-white font-black mb-6 text-lg">روابط تهمك</h3>
-            <ul className="space-y-3">
-              {[
-                { name: "المفضلة", path: "/favorites", icon: Heart },
-                { name: "قائمة المشاهدة", path: "/watchlist", icon: Bookmark },
-                { name: "سجل المشاهدة", path: "/history", icon: Clock },
-                { name: "تواصل معنا", path: "/contact", icon: Mail },
-                { name: "سياسة الخصوصية", path: "/privacy", icon: Shield },
-              ].map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="flex items-center gap-2.5 text-gray-400 hover:text-rose-500 transition-colors duration-300 text-sm justify-end font-medium group"
-                  >
-                    <span className="group-hover:translate-x-[-4px] transition-transform">{link.name}</span>
-                    <link.icon className="w-4 h-4 opacity-70" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+      <div className="container mx-auto px-6 pt-16 pb-6 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+          {groups.map((group) => (
+            <div key={group.label}>
+              <h3 className="text-white font-bold text-xs mb-4 tracking-wider uppercase opacity-70">
+                {group.label}
+              </h3>
+              <ul className="space-y-2.5">
+                {group.links.map((link) => (
+                  <li key={link.path}>
+                    <Link
+                      to={link.path}
+                      className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div className="col-span-2 md:col-span-1">
+            <h3 className="text-white font-bold text-xs mb-4 tracking-wider uppercase opacity-70">
+              التطبيق
+            </h3>
+            <div className="flex flex-col items-center md:items-start gap-3">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin : "")}`}
+                alt="QRcode"
+                className="w-28 h-28 rounded-xl bg-white p-1.5 shadow-lg"
+                loading="lazy"
+              />
+              <p className="text-gray-400 text-xs text-center md:text-right leading-relaxed">
+                حمّل التطبيق الآن<br />وتمتع بالتجربة الكاملة
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* الحقوق */}
-        <div className="border-t border-gray-800/50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-500 text-xs font-medium">
-            © 2026 دراماكسيا — جميع الحقوق محفوظة. صُمم بكل حب لعشاق السينما.
-          </p>
-          <div className="flex gap-6">
-            <span className="text-gray-600 text-[10px] uppercase tracking-widest font-bold">4K QUALITY</span>
-            <span className="text-gray-600 text-[10px] uppercase tracking-widest font-bold">FAST STREAMING</span>
-            <span className="text-gray-600 text-[10px] uppercase tracking-widest font-bold">SECURE PLATFORM</span>
+        <div className="border-t border-gray-800/50 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-4">
+            <Link to="/" className="text-lg font-black bg-gradient-to-l from-rose-400 to-rose-600 bg-clip-text text-transparent tracking-tight">
+              سينمورا
+            </Link>
+            <span className="w-px h-4 bg-gray-700/50 hidden md:block" />
+            <p className="text-gray-500 text-xs">
+              © {new Date().getFullYear()} — جميع الحقوق محفوظة
+            </p>
           </div>
+
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1 text-gray-600 text-[10px] tracking-widest font-bold px-2.5 py-1 rounded-full bg-gray-800/30 border border-gray-700/30">
+              <Zap className="w-2.5 h-2.5 text-yellow-500/70" /> 4K
+            </span>
+            <span className="flex items-center gap-1 text-gray-600 text-[10px] tracking-widest font-bold px-2.5 py-1 rounded-full bg-gray-800/30 border border-gray-700/30">
+              <Globe className="w-2.5 h-2.5 text-blue-500/70" /> HD
+            </span>
+            <span className="flex items-center gap-1 text-gray-600 text-[10px] tracking-widest font-bold px-2.5 py-1 rounded-full bg-gray-800/30 border border-gray-700/30">
+              <Shield className="w-2.5 h-2.5 text-emerald-500/70" /> آمن
+            </span>
+          </div>
+
+          <button
+            onClick={scrollToTop}
+            className="flex items-center gap-1 text-xs text-gray-500 hover:text-rose-400 transition-colors duration-200"
+          >
+            عد إلى الأعلى
+            <ArrowUp className="w-3 h-3" />
+          </button>
         </div>
       </div>
     </footer>

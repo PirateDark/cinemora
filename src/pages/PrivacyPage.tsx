@@ -4,16 +4,16 @@ export default function PrivacyPage() {
       <h1 className="text-3xl font-bold mb-6 text-center">سياسة الخصوصية</h1>
       <div className="bg-gray-900 rounded-xl p-6 space-y-6 text-gray-300 leading-relaxed">
         <p>
-          في <strong className="text-rose-500">دراماكسيا</strong>، نحن ملتزمون
+          في <strong className="text-rose-500">سينمورا</strong>، نحن ملتزمون
           بحماية خصوصيتك وضمان أمان بياناتك الشخصية. تشرح هذه السياسة كيفية جمع
           معلوماتك واستخدامها وحمايتها عند استخدامك لموقعنا.
         </p>
 
         <h2 className="text-xl font-semibold text-white mt-6">من نحن</h2>
         <p>
-          <strong className="text-rose-500">دراماكسيا</strong> هو موقع متخصص في
-          عرض الأنمي والمحتوى المرئي، نهدف إلى توفير تجربة مشاهدة ممتعة وآمنة
-          لمستخدمينا مع احترام كامل للخصوصية.
+          <strong className="text-rose-500">سينمورا</strong> هي منصة متكاملة
+          لعرض الأفلام والمسلسلات والمحتوى المرئي من جميع أنحاء العالم، نهدف
+          إلى توفير تجربة مشاهدة ممتعة وآمنة لمستخدمينا مع احترام كامل للخصوصية.
         </p>
 
         <h2 className="text-xl font-semibold text-white mt-6">
@@ -116,7 +116,7 @@ export default function PrivacyPage() {
         </h2>
         <p>
           بياناتك لدينا سرية ولا يتم نشرها ولا مشاركتها مع أي جهة أخرى. اطمئن،
-          فأنت في موقع <strong className="text-rose-500">دراماكسيا</strong>{" "}
+          فأنت في موقع <strong className="text-rose-500">سينمورا</strong>{" "}
           بأمان كامل. نحن نحترم الخصوصية والبيانات الخاصة بك في حال قمت بتقديمها
           لنا.
         </p>
@@ -180,19 +180,19 @@ export default function PrivacyPage() {
           ماهي الأطراف الثالثة التي نستلم منها البيانات
         </h2>
         <p>
-          قد يوفر <strong className="text-rose-500">دراماكسيا</strong> روابط إلى
+          قد يوفر <strong className="text-rose-500">سينمورا</strong> روابط إلى
           مواقع ويب خاصة بأطراف ثالثة أو معلومات كخدمة للمستخدمين لدينا. وفي
           حالة استخدام هذه الروابط، ستُنقل إلى صفحات خارج مواقعنا. ولا تشكل هذه
           الروابط أو تعبر عن تأييد أو رعاية أو توصية من قبل
-          <strong className="text-rose-500">دراماكسيا</strong> بالطرف الثالث
+          <strong className="text-rose-500">سينمورا</strong> بالطرف الثالث
           الذي تؤدي إليه الروابط أو بموقعه الإلكتروني أو بالمعلومات الواردة فيه،
-          ولن يتحمل <strong className="text-rose-500">دراماكسيا</strong> أي
+          ولن يتحمل <strong className="text-rose-500">سينمورا</strong> أي
           مسؤولية أو التزام فيما يخص استخدامك له. ويكون مثل هذا الاستخدام خاضعًا
           لشروط الاستخدام وسياسات الخصوصية المطبقة على هذه المواقع.
         </p>
 
         <p className="text-sm text-gray-400 border-t border-gray-700 pt-4 mt-6">
-          آخر تحديث: 2025 - <strong className="text-rose-500">دراماكسيا</strong>
+          آخر تحديث: 2025 - <strong className="text-rose-500">سينمورا</strong>
         </p>
       </div>
     </div>

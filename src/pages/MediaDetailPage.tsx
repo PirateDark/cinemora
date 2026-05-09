@@ -26,8 +26,37 @@ import {
   getCredits,
 } from "../services/tmdbApi";
 import { getVideoSource } from "../services/proxyApi";
+import { useToast } from "../components/Toast";
+import SEO from "../components/SEO";
+
+interface Genre {
+  id: number;
+  name: string;
+}
+
+interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  profile_path: string | null;
+}
+
+interface MediaDetail {
+  id: number;
+  title?: string;
+  name?: string;
+  poster_path: string | null;
+  backdrop_path?: string | null;
+  vote_average: number;
+  overview: string;
+  release_date?: string;
+  first_air_date?: string;
+  number_of_seasons?: number;
+  genres?: Genre[];
+}
 
 export default function MediaDetailPage() {
+  const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams<{ type?: string; id?: string }>();
@@ -43,9 +72,9 @@ export default function MediaDetailPage() {
     }
   }
 
-  const [media, setMedia] = useState<any>(null);
-  const [similar, setSimilar] = useState<any[]>([]);
-  const [cast, setCast] = useState<any[]>([]);
+  const [media, setMedia] = useState<MediaDetail | null>(null);
+  const [similar, setSimilar] = useState<MediaDetail[]>([]);
+  const [cast, setCast] = useState<CastMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -68,6 +97,7 @@ export default function MediaDetailPage() {
   }, [mediaId, type]);
 
   const isMovie = type === "movie";
+  const mediaType: "movie" | "tv" = isMovie ? "movie" : "tv";
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -83,7 +113,6 @@ export default function MediaDetailPage() {
         ]);
         if (data) {
           setMedia(data);
-          document.title = `دراماكسيا | ${isMovie ? data.title : data.name}`;
           setSimilar(similarData || []);
           setCast(castData || []);
           addToWatchHistory({
@@ -95,9 +124,9 @@ export default function MediaDetailPage() {
         } else {
           setErrorMsg("لم يتم العثور على بيانات");
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error("API Error:", err);
-        setErrorMsg(err.message || "فشل الاتصال بـ TMDB");
+        setErrorMsg(err instanceof Error ? err.message : "فشل الاتصال بـ TMDB");
       } finally {
         setLoading(false);
       }
@@ -141,8 +170,8 @@ export default function MediaDetailPage() {
       vote_average: media.vote_average || 0,
       overview: media.overview || "",
       release_date: media.release_date || media.first_air_date || "",
-      genre_ids: media.genres?.map((g: any) => g.id) || [],
-      type: isMovie ? "movie" : "tv",
+      genre_ids: media.genres?.map((g: Genre) => g.id) || [],
+      type: mediaType,
       score: media.vote_average,
       images: {
         jpg: {
@@ -167,8 +196,8 @@ export default function MediaDetailPage() {
       vote_average: media.vote_average || 0,
       overview: media.overview || "",
       release_date: media.release_date || media.first_air_date || "",
-      genre_ids: media.genres?.map((g: any) => g.id) || [],
-      type: isMovie ? "movie" : "tv",
+      genre_ids: media.genres?.map((g: Genre) => g.id) || [],
+      type: mediaType,
       score: media.vote_average,
       images: {
         jpg: {
@@ -188,21 +217,15 @@ export default function MediaDetailPage() {
 
   const handleDownload = async () => {
     setDownloading(true);
-    try {
-      const videoUrl = await getVideoSource(
-        isMovie ? "movie" : "tv",
-        id!,
-        !isMovie ? 1 : undefined,
-        !isMovie ? 1 : undefined,
-      );
-      if (videoUrl) window.open(videoUrl, "_blank");
-      else alert("لم يتم العثور على رابط للتحميل");
-    } catch (error) {
-      console.error("Download error:", error);
-      alert("حدث خطأ أثناء محاولة التحميل");
-    } finally {
-      setDownloading(false);
-    }
+    const videoSource = await getVideoSource(
+      isMovie ? "movie" : "tv",
+      id!,
+      !isMovie ? 1 : undefined,
+      !isMovie ? 1 : undefined,
+    );
+    if (videoSource?.url) window.open(videoSource.url, "_blank");
+    else toast("لم يتم العثور على رابط للتحميل");
+    setDownloading(false);
   };
 
   if (loading) return <LoadingSpinner />;
@@ -220,16 +243,19 @@ export default function MediaDetailPage() {
 
   return (
     <div className="container mx-auto px-4 py-6">
+      <SEO title={isMovie ? media.title || "" : media.name || ""} />
       <div className="relative rounded-xl overflow-hidden bg-gray-900">
         <img
           src={`https://image.tmdb.org/t/p/w1280${backdropPath || posterPath}`}
           alt={title}
+          loading="lazy"
           className="w-full h-64 md:h-96 object-cover opacity-30"
         />
         <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col md:flex-row items-center md:items-start gap-6 p-6">
           <img
             src={`https://image.tmdb.org/t/p/w500${posterPath}`}
             alt={title}
+            loading="lazy"
             className="w-48 md:w-64 rounded-lg shadow-lg"
           />
           <div className="flex-1 text-center md:text-right">
@@ -296,9 +322,9 @@ export default function MediaDetailPage() {
                   : "أضف لقائمة المشاهدة"}
               </button>
             </div>
-            {genres?.length > 0 && (
+            {genres && genres.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
-                {genres.map((g: any) => (
+                {genres.map((g: Genre) => (
                   <span
                     key={g.id}
                     className="bg-gray-800 px-2 py-1 rounded-full text-sm"
@@ -319,7 +345,7 @@ export default function MediaDetailPage() {
         <div className="mt-10">
           <h2 className="text-2xl font-bold mb-4">طاقم التمثيل</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-4">
-            {cast.map((actor: any) => (
+            {cast.map((actor: CastMember) => (
               <div key={actor.id} className="text-center">
                 <img
                   src={
@@ -328,6 +354,7 @@ export default function MediaDetailPage() {
                       : "https://via.placeholder.com/100x150?text=?"
                   }
                   alt={actor.name}
+                  loading="lazy"
                   className="w-full aspect-[2/3] object-cover rounded-lg mb-2"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
@@ -352,7 +379,7 @@ export default function MediaDetailPage() {
             {isMovie ? "أفلام مشابهة" : "مسلسلات مشابهة"}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {similar.map((item: any) => (
+            {similar.map((item: MediaDetail) => (
               <MediaCard
                 key={item.id}
                 media={item}

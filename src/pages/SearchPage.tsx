@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { searchMulti } from "../services/tmdbApi";
+import { searchMulti, TmdbMovie } from "../services/tmdbApi";
 import MediaCard from "../components/MediaCard";
 import MediaSkeleton from "../components/MediaSkeleton";
+import SEO from "../components/SEO";
+
+interface SearchResult extends TmdbMovie {
+  media_type: "movie" | "tv";
+  name?: string;
+  first_air_date?: string;
+}
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
 
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
@@ -22,11 +29,10 @@ export default function SearchPage() {
     const fetchResults = async () => {
       setLoading(true);
       setSearched(true);
-      document.title = `دراماكسيا | بحث عن: ${query}`;
       try {
         const data = await searchMulti(query);
         const filtered = data.filter(
-          (item: any) =>
+          (item: SearchResult) =>
             (item.media_type === "movie" || item.media_type === "tv") &&
             item.poster_path,
         );
@@ -44,6 +50,7 @@ export default function SearchPage() {
 
   return (
     <div className="container mx-auto px-4 py-6">
+      <SEO title={query ? `بحث عن: ${query}` : "بحث"} />
       {!query.trim() ? (
         <div className="text-center py-20 text-gray-400">
           <p className="text-xl">ابحث عن فيلم أو مسلسل...</p>
@@ -62,7 +69,7 @@ export default function SearchPage() {
               ? Array.from({ length: 12 }).map((_, i) => (
                   <MediaSkeleton key={i} />
                 ))
-              : results.map((item: any) => (
+              : results.map((item: SearchResult) => (
                   <MediaCard
                     key={item.id}
                     media={item}

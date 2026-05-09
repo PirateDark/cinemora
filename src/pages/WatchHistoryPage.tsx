@@ -79,6 +79,7 @@ export default function WatchHistoryPage() {
                       : "/placeholder.png"
                   }
                   alt={item.title}
+                  loading="lazy"
                   className="w-full aspect-[2/3] object-cover hover:scale-105 transition-transform duration-300"
                 />
               </div>

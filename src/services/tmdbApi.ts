@@ -164,7 +164,7 @@ export const getOfficialTrailerKey = async (
     });
     const videos = res.data.results || [];
     const trailer = videos.find(
-      (v: any) => v.type === "Trailer" && v.site === "YouTube",
+      (v: { type: string; site: string; key: string }) => v.type === "Trailer" && v.site === "YouTube",
     );
     return trailer?.key || null;
   } catch {
@@ -250,11 +250,17 @@ export const searchMulti = async (query: string) => {
       params: { api_key: TMDB_API_KEY, query, language: "ar" },
     }),
   ]);
+  interface SearchResultItem {
+    id: number;
+    title?: string;
+    name?: string;
+    overview?: string;
+  }
   const enResults = enRes.data.results || [];
   const arResults = arRes.data.results || [];
-  const arMap = new Map(arResults.map((m: any) => [m.id, m]));
-  return enResults.map((item: any) => {
-    const arItem = arMap.get(item.id) as any;
+  const arMap = new Map<number, SearchResultItem>(arResults.map((m: SearchResultItem) => [m.id, m]));
+  return enResults.map((item: SearchResultItem) => {
+    const arItem = arMap.get(item.id);
     return { ...item, overview: arItem?.overview || item.overview };
   });
 };
@@ -269,6 +275,7 @@ export const getAsianShows = async (country: string, page = 1) => {
       params: {
         api_key: TMDB_API_KEY,
         with_origin_country: country,
+        without_genres: 16,
         sort_by: "popularity.desc",
         language: "en",
         page,
@@ -278,6 +285,7 @@ export const getAsianShows = async (country: string, page = 1) => {
       params: {
         api_key: TMDB_API_KEY,
         with_origin_country: country,
+        without_genres: 16,
         sort_by: "popularity.desc",
         language: "ar",
         page,
@@ -287,6 +295,43 @@ export const getAsianShows = async (country: string, page = 1) => {
 
   const result = {
     results: mergeTvResults(enRes.data.results, arRes.data.results),
+    total_pages: enRes.data.total_pages,
+  };
+
+  setCache(cacheKey, result);
+  return result;
+};
+
+export const getAsianMovies = async (country: string, page = 1) => {
+  const cacheKey = `asian_movies_${country}_${page}`;
+  const cached = getCache<{ results: TmdbMovie[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/discover/movie`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_origin_country: country,
+        without_genres: 16,
+        sort_by: "popularity.desc",
+        language: "en",
+        page,
+      },
+    }),
+    axios.get(`${TMDB_BASE_URL}/discover/movie`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_origin_country: country,
+        without_genres: 16,
+        sort_by: "popularity.desc",
+        language: "ar",
+        page,
+      },
+    }),
+  ]);
+
+  const result = {
+    results: mergeMovieResults(enRes.data.results, arRes.data.results),
     total_pages: enRes.data.total_pages,
   };
 
@@ -304,6 +349,7 @@ export const getTurkishMovies = async (page = 1) => {
       params: {
         api_key: TMDB_API_KEY,
         with_origin_country: "TR",
+        without_genres: 16,
         sort_by: "popularity.desc",
         language: "en",
         page,
@@ -313,6 +359,7 @@ export const getTurkishMovies = async (page = 1) => {
       params: {
         api_key: TMDB_API_KEY,
         with_origin_country: "TR",
+        without_genres: 16,
         sort_by: "popularity.desc",
         language: "ar",
         page,
@@ -339,6 +386,7 @@ export const getTurkishShows = async (page = 1) => {
       params: {
         api_key: TMDB_API_KEY,
         with_origin_country: "TR",
+        without_genres: 16,
         sort_by: "popularity.desc",
         language: "en",
         page,
@@ -348,6 +396,7 @@ export const getTurkishShows = async (page = 1) => {
       params: {
         api_key: TMDB_API_KEY,
         with_origin_country: "TR",
+        without_genres: 16,
         sort_by: "popularity.desc",
         language: "ar",
         page,
@@ -357,6 +406,86 @@ export const getTurkishShows = async (page = 1) => {
 
   const result = {
     results: mergeTvResults(enRes.data.results, arRes.data.results),
+    total_pages: enRes.data.total_pages,
+  };
+
+  setCache(cacheKey, result);
+  return result;
+};
+
+export const getArabicMovies = async (page = 1) => {
+  const cacheKey = `arabic_movies_${page}`;
+  const cached = getCache<{ results: TmdbMovie[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/discover/movie`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_original_language: "ar",
+        without_genres: 16,
+        sort_by: "popularity.desc",
+        language: "en",
+        page,
+      },
+    }),
+    axios.get(`${TMDB_BASE_URL}/discover/movie`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_original_language: "ar",
+        without_genres: 16,
+        sort_by: "popularity.desc",
+        language: "ar",
+        page,
+      },
+    }),
+  ]);
+
+  const result = {
+    results: arRes.data.results.map((arItem: TmdbMovie) => {
+      const enItem = enRes.data.results.find((e: TmdbMovie) => e.id === arItem.id);
+      return { ...arItem, overview: enItem?.overview || arItem.overview };
+    }),
+    total_pages: enRes.data.total_pages,
+  };
+
+  setCache(cacheKey, result);
+  return result;
+};
+
+export const getArabicTvShows = async (page = 1) => {
+  const cacheKey = `arabic_tv_${page}`;
+  const cached = getCache<{ results: TmdbTvShow[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/discover/tv`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_original_language: "ar",
+        without_genres: 16,
+        sort_by: "popularity.desc",
+        language: "en",
+        page,
+      },
+    }),
+    axios.get(`${TMDB_BASE_URL}/discover/tv`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        with_original_language: "ar",
+        without_genres: 16,
+        sort_by: "popularity.desc",
+        language: "ar",
+        page,
+      },
+    }),
+  ]);
+
+  const result = {
+    results: arRes.data.results.map((arItem: TmdbTvShow) => {
+      const enItem = enRes.data.results.find((e: TmdbTvShow) => e.id === arItem.id);
+      return { ...arItem, overview: enItem?.overview || arItem.overview };
+    }),
     total_pages: enRes.data.total_pages,
   };
 
@@ -374,8 +503,13 @@ export const getSeasonDetails = async (tvId: number, seasonNumber: number) => {
     }),
   ]);
   
-  const mergedEpisodes = enRes.data.episodes.map((enEp: any) => {
-    const arEp = arRes.data.episodes.find((s: any) => s.id === enEp.id);
+  interface Episode {
+    id: number;
+    overview: string;
+    name: string;
+  }
+  const mergedEpisodes = enRes.data.episodes.map((enEp: Episode) => {
+    const arEp = arRes.data.episodes.find((s: Episode) => s.id === enEp.id);
     return {
       ...enEp,
       overview: arEp?.overview || enEp.overview,

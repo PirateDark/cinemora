@@ -1,35 +1,30 @@
 import { useState, useEffect } from "react";
-import { Anime } from "../types";
+import { MediaItem } from "../types";
 
 export function useFavorites() {
-  const [favorites, setFavorites] = useState<Anime[]>([]);
+  const [favorites, setFavorites] = useState<MediaItem[]>([]);
 
   useEffect(() => {
     const stored = localStorage.getItem("favorites");
     if (stored) {
       try {
         setFavorites(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to parse favorites", e);
+      } catch {
+        console.error("Failed to parse favorites");
       }
     }
   }, []);
 
-  // دالة مساعدة لتحويل id إلى رقم للمقارنة والتخزين
   const normalizeId = (id: number | string): number => {
     return typeof id === "number" ? id : parseInt(id, 10);
   };
 
-  const addFavorite = (anime: Anime) => {
-    const animeId = normalizeId(anime.mal_id);
-    const exists = favorites.some((a) => normalizeId(a.mal_id) === animeId);
+  const addFavorite = (item: MediaItem) => {
+    const itemId = normalizeId(item.mal_id);
+    const exists = favorites.some((a) => normalizeId(a.mal_id) === itemId);
     if (!exists) {
-      // تخزين id كرقم إن أمكن
-      const normalizedAnime = {
-        ...anime,
-        mal_id: animeId,
-      };
-      const newFav = [...favorites, normalizedAnime];
+      const normalized = { ...item, mal_id: itemId };
+      const newFav = [...favorites, normalized];
       setFavorites(newFav);
       localStorage.setItem("favorites", JSON.stringify(newFav));
     }

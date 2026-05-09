@@ -54,6 +54,7 @@ const GET_ANIME_QUERY = `
         description
         status
         episodes
+        duration
         chapters
         volumes
         season
@@ -209,7 +210,7 @@ export const getAnimeByGenre = async (
 export const getAnimeSeries = async (
   page: number = 1,
   perPage: number = 20,
-): Promise<AnilistMedia[]> => {
+): Promise<{ media: AnilistMedia[]; totalPages: number }> => {
   try {
     const variables = {
       page,
@@ -224,10 +225,13 @@ export const getAnimeSeries = async (
       variables,
     });
 
-    return response.data.data.Page.media;
+    return {
+      media: response.data.data.Page.media,
+      totalPages: response.data.data.Page.pageInfo.lastPage,
+    };
   } catch (error) {
     console.error("خطأ في جلب مسلسلات الأنمي:", error);
-    return [];
+    return { media: [], totalPages: 0 };
   }
 };
 
@@ -235,7 +239,7 @@ export const getAnimeSeries = async (
 export const getAnimeMovies = async (
   page: number = 1,
   perPage: number = 20,
-): Promise<AnilistMedia[]> => {
+): Promise<{ media: AnilistMedia[]; totalPages: number }> => {
   try {
     const variables = {
       page,
@@ -250,10 +254,13 @@ export const getAnimeMovies = async (
       variables,
     });
 
-    return response.data.data.Page.media;
+    return {
+      media: response.data.data.Page.media,
+      totalPages: response.data.data.Page.pageInfo.lastPage,
+    };
   } catch (error) {
     console.error("خطأ في جلب أفلام الأنمي:", error);
-    return [];
+    return { media: [], totalPages: 0 };
   }
 };
 
@@ -279,6 +286,7 @@ export const getAnimeDetails = async (
         description
         status
         episodes
+        duration
         chapters
         volumes
         season

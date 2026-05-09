@@ -1,8 +1,10 @@
 // Centralized API configuration — single source of truth for TMDB access
 import axios from "axios";
 
-export const TMDB_API_KEY =
-  (import.meta.env.VITE_TMDB_API_KEY as string) || "ff54d7a5fdc2ab56530491ac8d378131";
+// Global timeout prevents infinite loading when TMDB is unresponsive
+axios.defaults.timeout = 15000;
+
+export const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY as string;
 
 export const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 

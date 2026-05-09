@@ -21,6 +21,7 @@ export interface AnilistMedia {
   season: string | null;
   seasonYear: number | null;
   averageScore: number | null;
+  duration: number | null;
   popularity: number;
   format: string;
   genres: string[];

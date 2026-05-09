@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { createContext, useContext } from "react";
 
-// التصنيفات غير المناسبة للعائلة
 export const FAMILY_UNSAFE_GENRES = [
   { id: 27, name: "رعب", category: "horror" },
   { id: 53, name: "إثارة", category: "thriller" },
@@ -9,77 +8,30 @@ export const FAMILY_UNSAFE_GENRES = [
   { id: 80, name: "جريمة", category: "crime" },
 ];
 
-interface FamilyModeSettings {
+export interface FamilyModeSettings {
   enabled: boolean;
   blockAdult: boolean;
   blockedGenres: number[];
 }
 
-const DEFAULT_SETTINGS: FamilyModeSettings = {
+export const DEFAULT_SETTINGS: FamilyModeSettings = {
   enabled: false,
   blockAdult: true,
   blockedGenres: [27, 53, 10749],
 };
 
+export interface FamilyModeContextValue {
+  settings: FamilyModeSettings;
+  updateSettings: (settings: FamilyModeSettings) => void;
+  toggleEnabled: () => void;
+  isNotFamilyFriendly: (media: { adult?: boolean; genre_ids?: number[] }) => boolean;
+  availableGenres: typeof FAMILY_UNSAFE_GENRES;
+}
+
+export const FamilyModeContext = createContext<FamilyModeContextValue | null>(null);
+
 export function useFamilyMode() {
-  const [settings, setSettings] =
-    useState<FamilyModeSettings>(DEFAULT_SETTINGS);
-
-  // تحميل الإعدادات من localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem("familyModeSettings");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setSettings(parsed);
-      } catch (e) {
-        console.error("فشل تحميل إعدادات الوضع العائلي", e);
-      }
-    }
-  }, []);
-
-  // حفظ الإعدادات (بدون إعادة تحميل تلقائي)
-  const updateSettings = (newSettings: FamilyModeSettings) => {
-    setSettings(newSettings);
-    localStorage.setItem("familyModeSettings", JSON.stringify(newSettings));
-  };
-
-  // تبديل تفعيل الوضع العائلي (للزر السريع)
-  const toggleEnabled = () => {
-    const newSettings = { ...settings, enabled: !settings.enabled };
-    setSettings(newSettings);
-    localStorage.setItem("familyModeSettings", JSON.stringify(newSettings));
-    // إعادة تحميل الصفحة لتطبيق الفلترة على جميع البطاقات
-    setTimeout(() => {
-      if (typeof window !== "undefined") {
-        window.location.reload();
-      }
-    }, 50);
-  };
-
-  // التحقق مما إذا كان المحتوى غير مناسب للعائلة
-  const isNotFamilyFriendly = (media: any): boolean => {
-    if (!settings.enabled) return false;
-
-    // فحص المحتوى للكبار
-    if (settings.blockAdult && media.adult === true) return true;
-
-    // فحص التصنيفات الممنوعة
-    if (media.genre_ids && settings.blockedGenres.length > 0) {
-      const hasBlockedGenre = media.genre_ids.some((id: number) =>
-        settings.blockedGenres.includes(id),
-      );
-      if (hasBlockedGenre) return true;
-    }
-
-    return false;
-  };
-
-  return {
-    settings,
-    updateSettings,
-    toggleEnabled,
-    isNotFamilyFriendly,
-    availableGenres: FAMILY_UNSAFE_GENRES,
-  };
+  const ctx = useContext(FamilyModeContext);
+  if (!ctx) throw new Error("useFamilyMode must be used within FamilyModeProvider");
+  return ctx;
 }
