@@ -107,21 +107,21 @@ export default function CategoryPage<T extends { id: number }>({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-10 mb-4">
+        <div className="flex justify-center items-center gap-3 mt-10 mb-4">
           <button
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             disabled={currentPage === 1 || loading}
-            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg disabled:opacity-40 transition font-semibold"
+            className="px-6 py-3 md:px-5 md:py-2 bg-gray-700 hover:bg-gray-600 rounded-xl md:rounded-lg disabled:opacity-40 transition font-semibold text-sm active:scale-95"
           >
             السابق
           </button>
-          <span className="text-gray-300 font-medium">
-            صفحة {currentPage} من {totalPages}
+          <span className="text-gray-300 font-medium text-sm px-2">
+            {currentPage} من {totalPages}
           </span>
           <button
             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
             disabled={currentPage === totalPages || loading}
-            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg disabled:opacity-40 transition font-semibold"
+            className="px-6 py-3 md:px-5 md:py-2 bg-gray-700 hover:bg-gray-600 rounded-xl md:rounded-lg disabled:opacity-40 transition font-semibold text-sm active:scale-95"
           >
             التالي
           </button>

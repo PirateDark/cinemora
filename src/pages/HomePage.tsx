@@ -50,7 +50,7 @@ function HeroBanner({ items }: { items: HeroItem[] }) {
   const date = currentItem.release_date || currentItem.first_air_date;
 
   return (
-    <div className="relative w-full h-[460px] md:h-[620px] rounded-3xl overflow-hidden mb-16 shadow-2xl group">
+    <div className="relative w-full h-[50vh] min-h-[400px] md:h-[620px] rounded-3xl overflow-hidden mb-16 shadow-2xl group">
       <img
         key={currentItem.id}
         src={`https://image.tmdb.org/t/p/w1280${currentItem.backdrop_path || currentItem.poster_path}`}
@@ -59,31 +59,29 @@ function HeroBanner({ items }: { items: HeroItem[] }) {
         className="w-full h-full object-cover transition-all duration-1000 scale-105 group-hover:scale-100"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/50 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-950/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-l from-gray-950/80 via-gray-950/20 to-transparent" />
       <div className="absolute inset-0 bg-black/10" />
 
-      <div className="absolute inset-0 shimmer opacity-20 pointer-events-none" />
-
-      <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16">
+      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-16">
         <div className="max-w-3xl animate-fadeInUp">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex items-center gap-1.5 bg-rose-600/20 backdrop-blur-md border border-rose-500/30 px-3 py-1 rounded-full">
-              <Star className="w-4 h-4 fill-rose-500 text-rose-500" />
-              <span className="text-rose-400 font-bold text-sm">{currentItem.vote_average?.toFixed(1)}</span>
+          <div className="flex items-center gap-2 mb-3 md:mb-4">
+            <div className="flex items-center gap-1 bg-rose-600/20 backdrop-blur-md border border-rose-500/30 px-2.5 py-0.5 rounded-full">
+              <Star className="w-3 h-3 fill-rose-500 text-rose-500" />
+              <span className="text-rose-400 font-bold text-xs">{currentItem.vote_average?.toFixed(1)}</span>
             </div>
             {date && (
-              <span className="text-gray-300 bg-gray-800/50 backdrop-blur-md px-3 py-1 rounded-full text-sm border border-gray-700/30">
+              <span className="text-gray-300 bg-gray-800/50 backdrop-blur-md px-2.5 py-0.5 rounded-full text-xs border border-gray-700/30">
                 {new Date(date).getFullYear()}
               </span>
             )}
-            <span className="text-gray-300 bg-gray-800/50 backdrop-blur-md px-3 py-1 rounded-full text-sm border border-gray-700/30">
+            <span className="text-gray-300 bg-gray-800/50 backdrop-blur-md px-2.5 py-0.5 rounded-full text-xs border border-gray-700/30">
               {currentItem.media_type === "movie" ? "فيلم" : "مسلسل"}
             </span>
           </div>
 
           <h2
-            className="text-4xl md:text-6xl font-black mb-4 text-white drop-shadow-2xl text-left tracking-tight leading-tight"
+            className="text-2xl md:text-6xl font-black mb-2 md:mb-4 text-white drop-shadow-2xl text-left tracking-tight leading-tight"
             dir="ltr"
           >
             {currentItem.title}
@@ -91,58 +89,58 @@ function HeroBanner({ items }: { items: HeroItem[] }) {
 
           {currentItem.overview && (
             <p
-              className="text-gray-200 text-sm md:text-lg line-clamp-3 mb-8 text-right leading-relaxed max-w-2xl ml-auto"
+              className="text-gray-200 text-xs md:text-lg line-clamp-2 md:line-clamp-3 mb-4 md:mb-8 text-right leading-relaxed max-w-2xl ml-auto"
               dir="rtl"
             >
               {currentItem.overview}
             </p>
           )}
 
-          <div className="flex items-center justify-end md:justify-start gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(`/${currentItem.media_type}/${currentItem.id}`)}
-              className="flex items-center gap-3 bg-rose-600 hover:bg-rose-500 text-white px-8 py-4 rounded-2xl font-black transition-all hover:scale-105 hover:shadow-2xl hover:shadow-rose-600/40 active:scale-95 shadow-xl shadow-rose-600/30 group/btn"
+              className="flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-bold md:font-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-rose-600/30"
             >
-              <Play className="w-6 h-6 fill-white group-hover/btn:scale-110 transition-transform" />
-              مشاهدة الآن
+              <Play className="w-4 h-4 md:w-6 md:h-6 fill-white" />
+              <span className="text-sm md:text-base">مشاهدة الآن</span>
             </button>
             <button
               onClick={() => navigate(`/${currentItem.media_type}/${currentItem.id}`)}
-              className="flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-8 py-4 rounded-2xl font-bold transition-all border border-white/15 hover:border-white/30"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-5 py-2.5 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold md:font-bold transition-all border border-white/15 active:scale-95"
             >
-              <Info className="w-5 h-5" />
-              التفاصيل
+              <Info className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="text-sm md:text-base">التفاصيل</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+      <div className="absolute top-1/2 -translate-y-1/2 left-2 right-2 md:left-4 md:right-4 flex justify-between items-center opacity-0 md:group-hover:opacity-100 transition-opacity duration-500">
         <button
           onClick={prev}
-          className="bg-black/30 hover:bg-rose-600/80 backdrop-blur-xl text-white p-4 rounded-2xl transition-all border border-white/10 hover:border-rose-500/50 active:scale-90 hover:scale-105"
+          className="bg-black/40 hover:bg-rose-600/80 backdrop-blur-xl text-white p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border border-white/10 active:scale-90"
           aria-label="السابق"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
         </button>
         <button
           onClick={next}
-          className="bg-black/30 hover:bg-rose-600/80 backdrop-blur-xl text-white p-4 rounded-2xl transition-all border border-white/10 hover:border-rose-500/50 active:scale-90 hover:scale-105"
+          className="bg-black/40 hover:bg-rose-600/80 backdrop-blur-xl text-white p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border border-white/10 active:scale-90"
           aria-label="التالي"
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
         </button>
       </div>
 
-      <div className="absolute bottom-8 right-16 flex gap-2">
+      <div className="absolute bottom-4 md:bottom-8 right-4 md:right-16 flex gap-1.5 md:gap-2">
         {featured.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`rounded-full transition-all duration-500 ${
+            className={`rounded-full transition-all duration-500 active:scale-90 ${
               i === current
-                ? "w-8 h-1.5 bg-rose-600 shadow-lg shadow-rose-600/50"
-                : "w-1.5 h-1.5 bg-white/40 hover:bg-white/70"
+                ? "w-6 md:w-8 h-1.5 md:h-1.5 bg-rose-600 shadow-lg shadow-rose-600/50"
+                : "w-1.5 md:w-1.5 h-1.5 md:h-1.5 bg-white/50 hover:bg-white/80"
             }`}
             aria-label={` slide ${i + 1}`}
           />

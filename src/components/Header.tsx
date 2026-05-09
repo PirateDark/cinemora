@@ -241,60 +241,66 @@ export default function Header() {
       </div>
 
       {isMenuOpen && (
-        <div className="md:hidden bg-gray-900/98 backdrop-blur-xl border-t border-gray-800/50 py-3 px-4 flex flex-col gap-1 animate-fadeIn max-h-[80vh] overflow-y-auto">
-          <MobileNavItem to="/" icon={<Home className="w-4 h-4" />} label="الرئيسية" onClose={() => setIsMenuOpen(false)} onClick={goToHome} />
+        <div className="md:hidden bg-gray-900/98 backdrop-blur-xl border-t border-gray-800/50 py-4 px-4 flex flex-col gap-1 animate-slideDown max-h-[85vh] overflow-y-auto">
+          <div className="mb-3">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          </div>
 
-          <div className="pr-3 mt-2">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">مسلسلات</p>
+          <div className="border-b border-gray-800/30 pb-2 mb-1">
+            <MobileNavItem to="/" icon={<Home className="w-4 h-4" />} label="الرئيسية" onClose={() => setIsMenuOpen(false)} onClick={goToHome} />
+          </div>
+
+          <div className="space-y-0.5">
+            <p className="text-gray-500 text-[10px] font-bold tracking-wider px-4 pb-1 pt-2">مسلسلات</p>
             {dropdownItems.tv.map((item) => (
               <MobileNavItem key={item.path} to={item.path} label={item.name} onClose={() => setIsMenuOpen(false)} />
             ))}
           </div>
 
-          <div className="pr-3 mt-2">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">أفلام</p>
+          <div className="space-y-0.5">
+            <p className="text-gray-500 text-[10px] font-bold tracking-wider px-4 pb-1 pt-3">أفلام</p>
             {dropdownItems.movies.map((item) => (
               <MobileNavItem key={item.path} to={item.path} label={item.name} onClose={() => setIsMenuOpen(false)} />
             ))}
           </div>
 
-          <div className="pr-3 mt-2">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">أنمي</p>
+          <div className="space-y-0.5">
+            <p className="text-gray-500 text-[10px] font-bold tracking-wider px-4 pb-1 pt-3">أنمي</p>
             {dropdownItems.anime.map((item) => (
               <MobileNavItem key={item.path} to={item.path} label={item.name} onClose={() => setIsMenuOpen(false)} />
             ))}
           </div>
 
-          {navLinks.map((link) => (
-            <MobileNavItem key={link.path} to={link.path} icon={<link.icon className="w-4 h-4" />} label={link.name} onClose={() => setIsMenuOpen(false)} />
-          ))}
+          <div className="border-t border-gray-800/30 pt-2 mt-2 space-y-0.5">
+            {navLinks.map((link) => (
+              <MobileNavItem key={link.path} to={link.path} icon={<link.icon className="w-4 h-4" />} label={link.name} onClose={() => setIsMenuOpen(false)} />
+            ))}
+          </div>
 
-          <button
-            onClick={() => { toggleEnabled(); setIsMenuOpen(false); }}
-            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition w-full mt-1 ${
-              settings.enabled
-                ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/20"
-                : "bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border border-gray-700/30"
-            }`}
-          >
-            {settings.enabled ? <ShieldCheck className="w-4 h-4" /> : <Users className="w-4 h-4" />}
-            <span>{settings.enabled ? "الوضع العائلي: مفعل" : "الوضع العائلي"}</span>
-          </button>
+          <div className="border-t border-gray-800/30 pt-3 mt-2 space-y-2">
+            <button
+              onClick={() => { toggleEnabled(); setIsMenuOpen(false); }}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition w-full ${
+                settings.enabled
+                  ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/20"
+                  : "bg-gray-800/50 text-gray-300 active:bg-gray-700/50 border border-gray-700/30"
+              }`}
+            >
+              {settings.enabled ? <ShieldCheck className="w-4 h-4" /> : <Users className="w-4 h-4" />}
+              <span>{settings.enabled ? "الوضع العائلي: مفعل" : "الوضع العائلي"}</span>
+            </button>
 
-          <button
-            onClick={() => {
-              setIsMenuOpen(false);
-              const event = (window as any).__pwaInstallEvent;
-              if (event) event.prompt();
-            }}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition w-full mt-2 bg-rose-600/20 text-rose-400 border border-rose-500/30 hover:bg-rose-600/30"
-          >
-            <Download className="w-4 h-4" />
-            <span>حمّل التطبيق الآن</span>
-          </button>
-
-          <div className="mt-2">
-            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            <button
+              onClick={() => {
+                setIsMenuOpen(false);
+                const event = (window as any).__pwaInstallEvent;
+                if (event) event.prompt();
+              }}
+              className="flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition w-full bg-rose-600 text-white active:bg-rose-700 active:scale-[0.98] shadow-lg shadow-rose-600/30"
+            >
+              <Download className="w-4 h-4" />
+              <span>حمّل تطبيق سينمورا</span>
+            </button>
           </div>
         </div>
       )}

@@ -63,22 +63,23 @@ export default function MoviesPage() {
         </div>
       )}
       {totalPages > 0 && (
-        <div className="flex justify-center items-center gap-4 mt-10 mb-4">
+        <div className="flex justify-center items-center gap-3 mt-10 mb-4">
           <button
             onClick={handlePrev}
             disabled={currentPage === 1 || loading}
-            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg disabled:opacity-40 transition font-semibold"
+            className="px-6 py-3 md:px-5 md:py-2 bg-gray-700 hover:bg-gray-600 rounded-xl md:rounded-lg disabled:opacity-40 transition font-semibold text-sm active:scale-95"
           >
             السابق
           </button>
-          <span className="text-gray-300 text-sm">
-            صفحة <span className="text-white font-bold">{currentPage}</span> من{" "}
+          <span className="text-gray-300 text-sm px-2">
+            <span className="text-white font-bold">{currentPage}</span>
+            <span className="mx-1">من</span>
             <span className="text-white font-bold">{totalPages}</span>
           </span>
           <button
             onClick={handleNext}
             disabled={currentPage === totalPages || loading}
-            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg disabled:opacity-40 transition font-semibold"
+            className="px-6 py-3 md:px-5 md:py-2 bg-gray-700 hover:bg-gray-600 rounded-xl md:rounded-lg disabled:opacity-40 transition font-semibold text-sm active:scale-95"
           >
             التالي
           </button>

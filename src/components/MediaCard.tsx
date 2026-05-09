@@ -112,35 +112,35 @@ export default function MediaCard({ media, type }: MediaCardProps) {
           />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-3">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent md:opacity-0 md:group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-3">
           {overview && (
-            <p className="text-gray-200 text-xs line-clamp-3 mb-3 text-right leading-relaxed font-medium translate-y-3 group-hover:translate-y-0 transition-transform duration-500" dir="rtl">
+            <p className="text-gray-200 text-xs line-clamp-3 mb-3 text-right leading-relaxed font-medium opacity-0 md:group-hover:opacity-100 transition-opacity duration-500" dir="rtl">
               {overview}
             </p>
           )}
-          <div className="flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2.5 rounded-lg transition-all duration-300 transform translate-y-3 group-hover:translate-y-0 shadow-lg shadow-rose-600/30">
+          <div className="flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2.5 rounded-lg transition-all shadow-lg shadow-rose-600/30 active:scale-95">
             <Play className="w-3.5 h-3.5 fill-white" />
             مشاهدة
           </div>
         </div>
 
-        <div className="absolute top-2 left-2 right-2 flex justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10">
+        <div className="absolute top-2 left-2 right-2 flex justify-between z-10">
           <button
             onClick={handleFavorite}
-            className="p-2 bg-black/60 backdrop-blur-md rounded-lg hover:bg-rose-600 transition-all duration-300 hover:scale-110"
+            className="p-2 bg-black/60 backdrop-blur-md rounded-lg hover:bg-rose-600 transition-all duration-300 hover:scale-110 active:scale-90"
           >
             <Heart className={`w-3.5 h-3.5 ${isFavorite(id) ? "fill-rose-500 text-rose-500" : "text-white"}`} />
           </button>
           <button
             onClick={handleWatchlist}
-            className="p-2 bg-black/60 backdrop-blur-md rounded-lg hover:bg-blue-600 transition-all duration-300 hover:scale-110"
+            className="p-2 bg-black/60 backdrop-blur-md rounded-lg hover:bg-blue-600 transition-all duration-300 hover:scale-110 active:scale-90"
           >
             <Bookmark className={`w-3.5 h-3.5 ${isInWatchlist(id) ? "fill-blue-500 text-blue-500" : "text-white"}`} />
           </button>
         </div>
 
         {score != null && score > 0 && (
-          <div className="absolute top-2 right-2 bg-rose-600/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-lg flex items-center gap-0.5 group-hover:opacity-0 transition-opacity duration-300">
+          <div className="absolute top-2 right-2 bg-rose-600/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-lg flex items-center gap-0.5 transition-opacity duration-300">
             <Star className="w-2.5 h-2.5 fill-white" /> {score?.toFixed(1)}
           </div>
         )}
