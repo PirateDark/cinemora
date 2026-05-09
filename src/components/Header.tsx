@@ -290,17 +290,19 @@ export default function Header() {
               <span>{settings.enabled ? "الوضع العائلي: مفعل" : "الوضع العائلي"}</span>
             </button>
 
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                const event = (window as any).__pwaInstallEvent;
-                if (event) event.prompt();
-              }}
-              className="flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition w-full bg-rose-600 text-white active:bg-rose-700 active:scale-[0.98] shadow-lg shadow-rose-600/30"
-            >
-              <Download className="w-4 h-4" />
-              <span>حمّل تطبيق سينمورا</span>
-            </button>
+            {(window as any).__pwaInstallEvent && (
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  const event = (window as any).__pwaInstallEvent;
+                  if (event) event.prompt();
+                }}
+                className="flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition w-full bg-rose-600 text-white active:bg-rose-700 active:scale-[0.98] shadow-lg shadow-rose-600/30"
+              >
+                <Download className="w-4 h-4" />
+                <span>حمّل تطبيق سينمورا</span>
+              </button>
+            )}
           </div>
         </div>
       )}
