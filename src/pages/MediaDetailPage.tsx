@@ -244,14 +244,14 @@ export default function MediaDetailPage() {
   return (
     <div className="container mx-auto px-4 py-6">
       <SEO title={isMovie ? media.title || "" : media.name || ""} />
-      <div className="relative rounded-xl overflow-hidden bg-gray-900">
+      <div className="relative rounded-xl bg-gray-900">
         <img
           src={`https://image.tmdb.org/t/p/w1280${backdropPath || posterPath}`}
           alt={title}
           loading="lazy"
-          className="w-full h-64 md:h-96 object-cover opacity-30"
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
         />
-        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col md:flex-row items-center md:items-start gap-6 p-6">
+        <div className="relative flex flex-col md:flex-row items-center md:items-start gap-6 p-6 min-h-[50vh]">
           <img
             src={`https://image.tmdb.org/t/p/w500${posterPath}`}
             alt={title}
