@@ -47,6 +47,16 @@ export default function Header() {
   const location = useLocation();
   const { settings, toggleEnabled } = useFamilyMode();
   const searchRef = useRef<HTMLDivElement>(null);
+  const [canInstall, setCanInstall] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).__pwaInstallEvent) {
+      setCanInstall(true);
+    }
+    const handler = () => setCanInstall(!!(window as any).__pwaInstallEvent);
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -303,7 +313,7 @@ export default function Header() {
               <span>{settings.enabled ? "الوضع العائلي: مفعل" : "الوضع العائلي"}</span>
             </button>
 
-            {(window as any).__pwaInstallEvent && (
+            {canInstall && (
               <button
                 onClick={() => {
                   setIsMenuOpen(false);
