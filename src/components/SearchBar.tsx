@@ -10,8 +10,8 @@ interface SearchBarProps {
 
 export default function SearchBar({ value, onChange, onKeyDown, placeholder = "بحث...", className = "" }: SearchBarProps) {
   return (
-    <div className={`flex items-center bg-gray-800/70 hover:bg-gray-700/70 focus-within:bg-gray-700/70 focus-within:ring-1 focus-within:ring-rose-500/50 rounded-xl px-3 py-1.5 transition-all duration-200 border border-gray-700/30 ${className}`}>
-      <Search className="w-4 h-4 text-gray-400" />
+    <div className={`${className} flex items-center transition-all duration-200 px-3 py-1.5`}>
+      <Search className="w-4 h-4 text-gray-400 shrink-0" />
       <input
         type="text"
         placeholder={placeholder}
