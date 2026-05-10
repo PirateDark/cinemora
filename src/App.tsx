@@ -10,6 +10,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ToastProvider } from "./components/Toast";
 import { HelmetProvider } from "react-helmet-async";
 import { FamilyModeProvider } from "./components/FamilyModeProvider";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const MoviesPage = lazy(() => import("./pages/MoviesPage"));
@@ -31,6 +33,8 @@ const TurkishMoviesPage = lazy(() => import("./pages/TurkishMoviesPage"));
 const ArabicMoviesPage = lazy(() => import("./pages/ArabicMoviesPage"));
 const ArabicTvPage = lazy(() => import("./pages/ArabicTvPage"));
 const AsianMoviesPage = lazy(() => import("./pages/AsianMoviesPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function App() {
@@ -44,6 +48,7 @@ function App() {
     <div className="min-h-screen bg-gray-950 flex flex-col">
       <HelmetProvider>
       <ToastProvider>
+      <AuthProvider>
       <FamilyModeProvider>
       <Header />
       <main className="flex-grow container mx-auto px-4 py-6 animate-fadeIn">
@@ -78,6 +83,19 @@ function App() {
             <Route path="/movies/arabic" element={<ArabicMoviesPage />} />
             <Route path="/movies/asian" element={<AsianMoviesPage />} />
 
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/auth/callback"
+              element={<LoginPage />}
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/contact" element={<ContactPage />} />
 
@@ -91,6 +109,7 @@ function App() {
       <PwaInstallPrompt />
       <UpdatePrompt />
       </FamilyModeProvider>
+      </AuthProvider>
       </ToastProvider>
       </HelmetProvider>
     </div>

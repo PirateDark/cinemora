@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Search, Star, Film, Tv, Download } from "lucide-react";
+import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Search, Star, Film, Tv, Download, LogIn, LogOut } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import { useFamilyMode } from "../hooks/useFamilyMode";
@@ -8,6 +8,7 @@ import { searchMulti } from "../services/tmdbApi";
 import NavDropdown from "./NavDropdown";
 import MobileNavItem from "./MobileNavItem";
 import SearchBar from "./SearchBar";
+import { useAuth } from "../contexts/AuthContext";
 
 const dropdownItems = {
   tv: [
@@ -46,6 +47,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { settings, toggleEnabled } = useFamilyMode();
+  const { user, logout } = useAuth();
   const searchRef = useRef<HTMLDivElement>(null);
   const [canInstall, setCanInstall] = useState(false);
 
@@ -159,6 +161,26 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
+          {user ? (
+            <div className="flex items-center gap-2 pl-2 border-l border-gray-700/50 ml-1">
+              <span className="text-gray-400 text-sm hidden lg:inline max-w-[100px] truncate">{user.name}</span>
+              <button
+                onClick={logout}
+                className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-600/10 transition-all"
+                title="تسجيل الخروج"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-all"
+            >
+              <LogIn className="w-4 h-4" />
+              <span className="hidden lg:inline">دخول</span>
+            </Link>
+          )}
           <button
             onClick={toggleEnabled}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-300 border ${
@@ -312,6 +334,18 @@ export default function Header() {
               {settings.enabled ? <ShieldCheck className="w-4 h-4" /> : <Users className="w-4 h-4" />}
               <span>{settings.enabled ? "الوضع العائلي: مفعل" : "الوضع العائلي"}</span>
             </button>
+
+            {user ? (
+              <button
+                onClick={() => { logout(); setIsMenuOpen(false); }}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition w-full bg-gray-800/50 text-red-400 active:bg-red-600/20 border border-gray-700/30"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>تسجيل الخروج — {user.name}</span>
+              </button>
+            ) : (
+              <MobileNavItem to="/login" icon={<LogIn className="w-4 h-4" />} label="تسجيل الدخول" onClose={() => setIsMenuOpen(false)} />
+            )}
 
             {canInstall && (
               <button
