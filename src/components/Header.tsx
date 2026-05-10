@@ -172,7 +172,7 @@ export default function Header() {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 pl-2 border-l border-gray-700/50 ml-1 group"
               >
-                <div className="w-[35px] h-[35px] rounded-full overflow-hidden ring-2 ring-gray-700/50 group-hover:ring-rose-500/50 transition-all">
+                <div className="w-[35px] h-[35px] rounded-full overflow-hidden border-2 border-[#ff0055] shadow-[0_0_10px_rgba(255,0,85,0.5)] transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(255,0,85,0.7)]">
                   {user.avatar ? (
                     <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
@@ -233,7 +233,7 @@ export default function Header() {
           ) : (
             <Link
               to="/login"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-rose-400 border border-rose-600/50 hover:bg-rose-600/10 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-600/20 transition-all active:scale-[0.97]"
+              className="flex items-center gap-2 px-6 py-2 bg-transparent border-2 border-[#ff0055] text-[#ff0055] font-bold rounded-full transition-all duration-300 hover:bg-[#ff0055] hover:text-white hover:shadow-[0_0_15px_#ff0055] active:scale-95"
             >
               <LogIn className="w-4 h-4" />
               <span>دخول</span>
@@ -427,7 +427,7 @@ export default function Header() {
               <Link
                 to="/login"
                 onClick={() => setIsMenuOpen(false)}
-                className="flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition w-full border border-rose-600/50 text-rose-400 hover:bg-rose-600/10 active:scale-[0.98]"
+                className="flex items-center justify-center gap-3 px-6 py-3 bg-transparent border-2 border-[#ff0055] text-[#ff0055] font-bold rounded-full transition-all duration-300 hover:bg-[#ff0055] hover:text-white hover:shadow-[0_0_15px_#ff0055] active:scale-95 w-full"
               >
                 <LogIn className="w-4 h-4" />
                 <span>تسجيل الدخول</span>
