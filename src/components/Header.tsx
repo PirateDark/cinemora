@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Search, Star, Film, Tv, Download, LogIn, LogOut } from "lucide-react";
+import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Shield, Search, Star, Film, Tv, Download, LogIn, LogOut, User, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import { useFamilyMode } from "../hooks/useFamilyMode";
@@ -49,7 +49,9 @@ export default function Header() {
   const { settings, toggleEnabled } = useFamilyMode();
   const { user, logout } = useAuth();
   const searchRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const [canInstall, setCanInstall] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).__pwaInstallEvent) {
@@ -95,6 +97,9 @@ export default function Header() {
     const handleClick = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowResults(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
       }
     };
     document.addEventListener("mousedown", handleClick);
@@ -162,20 +167,73 @@ export default function Header() {
 
         <div className="hidden md:flex items-center gap-2">
           {user ? (
-            <div className="flex items-center gap-2 pl-2 border-l border-gray-700/50 ml-1">
-              <span className="text-gray-400 text-sm hidden lg:inline max-w-[100px] truncate">{user.name}</span>
+            <div ref={userMenuRef} className="relative">
               <button
-                onClick={logout}
-                className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-600/10 transition-all"
-                title="تسجيل الخروج"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 pl-2 border-l border-gray-700/50 ml-1 group"
               >
-                <LogOut className="w-4 h-4" />
+                <div className="w-[35px] h-[35px] rounded-full overflow-hidden ring-2 ring-gray-700/50 group-hover:ring-rose-500/50 transition-all">
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                      <User className="w-4 h-4 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""}`} />
               </button>
+
+              {showUserMenu && (
+                <div className="absolute top-full left-0 mt-2 w-56 bg-gray-900/98 backdrop-blur-xl border border-gray-700/50 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-fadeIn">
+                  <div className="px-4 py-3 border-b border-gray-800/50">
+                    <p className="text-white text-sm font-medium truncate">{user.name}</p>
+                    <p className="text-gray-500 text-xs truncate">{user.email}</p>
+                  </div>
+                  <div className="py-1">
+                    {user.role === "admin" && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800/80 transition-colors"
+                      >
+                        <Shield className="w-4 h-4 text-rose-400" />
+                        لوحة التحكم
+                      </Link>
+                    )}
+                    <Link
+                      to="/watchlist"
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800/80 transition-colors"
+                    >
+                      <Bookmark className="w-4 h-4 text-amber-400" />
+                      قائمة المشاهدة
+                    </Link>
+                    <Link
+                      to="/favorites"
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800/80 transition-colors"
+                    >
+                      <Heart className="w-4 h-4 text-red-400" />
+                      المفضلة
+                    </Link>
+                  </div>
+                  <div className="border-t border-gray-800/50 py-1">
+                    <button
+                      onClick={() => { logout(); setShowUserMenu(false); }}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-600/10 transition-colors w-full text-right"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      تسجيل الخروج
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <Link
               to="/login"
-              className="flex items-center gap-2 px-4 py-2 mr-3 rounded-xl text-sm font-bold text-white bg-gradient-to-l from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 shadow-lg shadow-rose-600/25 hover:shadow-rose-500/40 transition-all active:scale-[0.97]"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-rose-400 border border-rose-600/50 hover:bg-rose-600/10 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-600/20 transition-all active:scale-[0.97]"
             >
               <LogIn className="w-4 h-4" />
               <span>دخول</span>
@@ -336,18 +394,40 @@ export default function Header() {
             </button>
 
             {user ? (
-              <button
-                onClick={() => { logout(); setIsMenuOpen(false); }}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition w-full bg-gray-800/50 text-red-400 active:bg-red-600/20 border border-gray-700/30"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>تسجيل الخروج — {user.name}</span>
-              </button>
+              <div className="space-y-1">
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700/30">
+                  <div className="w-[38px] h-[38px] rounded-full overflow-hidden ring-2 ring-gray-700 shrink-0">
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                        <User className="w-4 h-4 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{user.name}</p>
+                    <p className="text-gray-500 text-xs truncate">{user.email}</p>
+                  </div>
+                </div>
+                {user.role === "admin" && (
+                  <MobileNavItem to="/admin" icon={<Shield className="w-4 h-4 text-rose-400" />} label="لوحة التحكم" onClose={() => setIsMenuOpen(false)} />
+                )}
+                <MobileNavItem to="/watchlist" icon={<Bookmark className="w-4 h-4 text-amber-400" />} label="قائمة المشاهدة" onClose={() => setIsMenuOpen(false)} />
+                <MobileNavItem to="/favorites" icon={<Heart className="w-4 h-4 text-red-400" />} label="المفضلة" onClose={() => setIsMenuOpen(false)} />
+                <button
+                  onClick={() => { logout(); setIsMenuOpen(false); }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition w-full text-red-400 hover:bg-red-600/10 border border-gray-700/30"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>تسجيل الخروج</span>
+                </button>
+              </div>
             ) : (
               <Link
                 to="/login"
                 onClick={() => setIsMenuOpen(false)}
-                className="flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition w-full bg-gradient-to-l from-rose-600 to-rose-500 text-white active:scale-[0.98] shadow-lg shadow-rose-600/30"
+                className="flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition w-full border border-rose-600/50 text-rose-400 hover:bg-rose-600/10 active:scale-[0.98]"
               >
                 <LogIn className="w-4 h-4" />
                 <span>تسجيل الدخول</span>
