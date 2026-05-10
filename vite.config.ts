@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  build: { chunkSizeWarningLimit: 600 },
   plugins: [
     react(),
     VitePWA({
@@ -34,5 +35,11 @@ export default defineConfig({
   ],
   server: {
     port: 3000,
+    proxy: {
+      "/api": {
+        target: "http://localhost:5555",
+        changeOrigin: true,
+      },
+    },
   },
 });

@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Shield, Search, Star, Film, Tv, Download, LogIn, LogOut, User, ChevronDown, Lock } from "lucide-react";
+import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Shield, Search, Star, Film, Tv, Download, LogIn, LogOut, User, ChevronDown, Crown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import { useFamilyMode } from "../hooks/useFamilyMode";
@@ -123,16 +123,21 @@ export default function Header() {
           : "bg-gray-950/60 backdrop-blur-md border-b border-gray-800/20"
       }`}
     >
-      <div className="container mx-auto px-4 py-2.5 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6">
-          <button
-            onClick={goToHome}
-            className="text-2xl font-black bg-gradient-to-l from-rose-500 via-rose-400 to-purple-600 bg-clip-text text-transparent cursor-pointer hover:scale-105 transition-transform tracking-tight shrink-0"
-          >
-            سينمورا
-          </button>
+      <div className="flex justify-between items-center w-full px-8 py-2.5">
+        {/* Right - Logo + Navigation */}
+        <div className="hidden md:flex items-center gap-6 ml-8">
+          {/* Logo */}
+          <div className="flex items-center shrink-0">
+            <button
+              onClick={goToHome}
+              className="text-2xl font-black bg-gradient-to-l from-rose-500 via-rose-400 to-purple-600 bg-clip-text text-transparent cursor-pointer hover:scale-105 transition-transform tracking-tight"
+            >
+              سينمورا
+            </button>
+          </div>
 
-          <nav className="hidden md:flex items-center gap-1">
+          {/* Nav Links */}
+          <nav className="flex items-center gap-1">
             <Link
               to="/"
               onClick={goToHome}
@@ -167,63 +172,9 @@ export default function Header() {
           </nav>
         </div>
 
-        <div className="hidden md:block flex-1" />
-
-        <div className="hidden md:flex items-center gap-3">
-          <div ref={searchRef} className="relative">
-            <SearchBar
-              value={searchQuery}
-              onChange={(v) => {
-                setSearchQuery(v);
-                if (!v.trim()) setShowResults(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && searchQuery.trim()) {
-                  setShowResults(false);
-                  navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-                }
-              }}
-              className="rounded-full bg-white/5 border border-white/10 hover:bg-white/10 focus-within:bg-white/10 focus-within:border-rose-500/30"
-            />
-            {showResults && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900/98 backdrop-blur-xl border border-gray-700/50 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-fadeIn">
-                <div className="max-h-80 overflow-y-auto">
-                  {searchResults.map((result) => (
-                    <Link
-                      key={`${result.media_type}-${result.id}`}
-                      to={`/${result.media_type}/${result.id}`}
-                      onClick={() => { setShowResults(false); setSearchQuery(""); }}
-                      className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800/80 transition-colors border-b border-gray-800/30 last:border-0 group"
-                    >
-                      <div className="w-10 h-14 rounded-lg overflow-hidden bg-gray-800 shrink-0 ring-1 ring-gray-700/50 group-hover:ring-rose-500/30 transition-all">
-                        {result.poster_path ? (
-                          <img
-                            src={`https://image.tmdb.org/t/p/w92${result.poster_path}`}
-                            alt={result.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-600">
-                            {result.media_type === "movie" ? <Film className="w-4 h-4" /> : <Tv className="w-4 h-4" />}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate group-hover:text-rose-300 transition-colors">{result.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded">
-                            {result.media_type === "movie" ? "فيلم" : "مسلسل"}
-                          </span>
-                          {result.vote_average != null && result.vote_average > 0 && (
-                            <span className="text-[10px] text-yellow-400 flex items-center gap-0.5">
-                              <Star className="w-2.5 h-2.5 fill-yellow-400" /> {result.vote_average.toFixed(1)}
-                            </span>
-                          )}
-                          {result.date && (
-                            <span className="text-[10px] text-gray-500">{new Date(result.date).getFullYear()}</span>
-                          )}
-          </div>
-
+        {/* Left - User Actions: Login, FamilyMode, Search (left to right) */}
+        <div className="hidden md:flex items-center gap-4">
+          {/* Login / User Menu */}
           {user ? (
             <div ref={userMenuRef} className="relative">
               <button
@@ -291,16 +242,17 @@ export default function Header() {
           ) : (
             <Link
               to="/login"
-              className="flex items-center gap-2 px-4 py-1.5 bg-transparent border-2 border-[#ff0055] text-[#ff0055] text-sm font-bold rounded-full transition-all duration-300 hover:bg-[#ff0055] hover:text-white hover:shadow-[0_0_15px_#ff0055] active:scale-95"
+              className="flex items-center gap-2 px-4 py-2 h-10 bg-transparent border-2 border-[#ff0055] text-[#ff0055] text-sm font-bold rounded-full transition-all duration-300 hover:bg-[#ff0055] hover:text-white hover:shadow-[0_0_15px_#ff0055] active:scale-95"
             >
-              <Lock size={14} />
+              <Crown size={14} />
               <span>تسجيل الدخول</span>
             </Link>
           )}
 
+          {/* Family Mode */}
           <button
             onClick={toggleEnabled}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-300 border ${
+            className={`flex items-center gap-1.5 px-4 py-2 h-10 rounded-full text-sm font-bold transition-all duration-300 border ${
               settings.enabled
                 ? "bg-emerald-600/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600/30 shadow-lg shadow-emerald-600/10"
                 : "bg-gray-800/50 text-gray-400 border-gray-700/50 hover:bg-gray-700/50 hover:text-gray-300"
@@ -311,7 +263,62 @@ export default function Header() {
             <span className="hidden lg:inline">وضع عائلي</span>
             {settings.enabled && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />}
           </button>
-        </div>
+
+          {/* Search Bar */}
+          <div ref={searchRef} className="relative max-w-[200px] flex-shrink-0">
+            <SearchBar
+              value={searchQuery}
+              onChange={(v) => {
+                setSearchQuery(v);
+                if (!v.trim()) setShowResults(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchQuery.trim()) {
+                  setShowResults(false);
+                  navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+                }
+              }}
+              className="rounded-full bg-white/5 border border-white/10 hover:bg-white/10 focus-within:bg-white/10 focus-within:border-rose-500/30"
+            />
+            {showResults && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900/98 backdrop-blur-xl border border-gray-700/50 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-fadeIn">
+                <div className="max-h-80 overflow-y-auto">
+                  {searchResults.map((result) => (
+                    <Link
+                      key={`${result.media_type}-${result.id}`}
+                      to={`/${result.media_type}/${result.id}`}
+                      onClick={() => { setShowResults(false); setSearchQuery(""); }}
+                      className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800/80 transition-colors border-b border-gray-800/30 last:border-0 group"
+                    >
+                      <div className="w-10 h-14 rounded-lg overflow-hidden bg-gray-800 shrink-0 ring-1 ring-gray-700/50 group-hover:ring-rose-500/30 transition-all">
+                        {result.poster_path ? (
+                          <img
+                            src={`https://image.tmdb.org/t/p/w92${result.poster_path}`}
+                            alt={result.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-600">
+                            {result.media_type === "movie" ? <Film className="w-4 h-4" /> : <Tv className="w-4 h-4" />}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate group-hover:text-rose-300 transition-colors">{result.title}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded">
+                            {result.media_type === "movie" ? "فيلم" : "مسلسل"}
+                          </span>
+                          {result.vote_average != null && result.vote_average > 0 && (
+                            <span className="text-[10px] text-yellow-400 flex items-center gap-0.5">
+                              <Star className="w-2.5 h-2.5 fill-yellow-400" /> {result.vote_average.toFixed(1)}
+                            </span>
+                          )}
+                          {result.date && (
+                            <span className="text-[10px] text-gray-500">{new Date(result.date).getFullYear()}</span>
+                          )}
+                        </div>
+                      </div>
                     </Link>
                   ))}
                 </div>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Trash2, Clock } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
+import { fetchWatchHistory } from "../services/vpsApi";
 
 interface HistoryItem {
   id: number;
@@ -11,15 +13,32 @@ interface HistoryItem {
 }
 
 export default function WatchHistoryPage() {
+  const { user } = useAuth();
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("watch_history");
-    if (stored) {
-      const parsed: HistoryItem[] = JSON.parse(stored);
-      setHistory(parsed.sort((a, b) => b.watchedAt - a.watchedAt));
+    if (user) {
+      fetchWatchHistory().then((items) => {
+        const mapped: HistoryItem[] = items.map((item: any) => {
+          const m = item.media || item;
+          return {
+            id: parseInt(m.tmdbId) || m.id,
+            type: m.category === "series" ? "tv" : "movie",
+            title: m.title || m.arabicTitle || "",
+            poster_path: m.posterPath || m.poster_path || "",
+            watchedAt: new Date(item.updatedAt || item.watchedAt).getTime(),
+          };
+        });
+        setHistory(mapped);
+      });
+    } else {
+      const stored = localStorage.getItem("watch_history");
+      if (stored) {
+        const parsed: HistoryItem[] = JSON.parse(stored);
+        setHistory(parsed.sort((a, b) => b.watchedAt - a.watchedAt));
+      }
     }
-  }, []);
+  }, [user]);
 
   const removeItem = (id: number, type: string) => {
     const updated = history.filter(

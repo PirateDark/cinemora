@@ -1,28 +1,31 @@
-const PROXY_BASE = "http://51.254.207.214:5555";
-
 export interface SourceInfo {
-  name: string;
+  server: string;
+  label: string;
   url: string;
+  type: "iframe" | "m3u8" | "mp4" | "embed";
+  priority: number;
 }
+
+const ENGINE_URL = import.meta.env.VITE_ENGINE_URL || "";
 
 export const getVideoSources = async (
   type: "movie" | "tv",
   id: string,
   season?: number,
   episode?: number,
-): Promise<SourceInfo[]> => {
+): Promise<{ sources: SourceInfo[]; errors?: string[] }> => {
   try {
-    const response = await fetch(`${PROXY_BASE}/api/sources`, {
+    if (!ENGINE_URL) return { sources: [] };
+    const res = await fetch(`${ENGINE_URL}/api/scraper/sources`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type, id, season, episode }),
-      signal: AbortSignal.timeout(20000),
+      signal: AbortSignal.timeout(25000),
     });
-    if (!response.ok) return [];
-    const data = await response.json();
-    return data.sources || [];
+    if (!res.ok) return { sources: [] };
+    return await res.json();
   } catch {
-    return [];
+    return { sources: [] };
   }
 };
 
@@ -32,6 +35,6 @@ export const getVideoSource = async (
   season?: number,
   episode?: number,
 ): Promise<SourceInfo | null> => {
-  const sources = await getVideoSources(type, id, season, episode);
-  return sources[0] || null;
+  const result = await getVideoSources(type, id, season, episode);
+  return result.sources?.[0] || null;
 };

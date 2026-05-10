@@ -11,8 +11,8 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const BASE_URL = process.env.BASE_URL || "http://localhost:5555";
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const BASE_URL = process.env.BASE_URL || "https://cinemora-theta.vercel.app";
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://cinemora-theta.vercel.app";
 
 function generateToken(user) {
   return jwt.sign(
@@ -116,20 +116,21 @@ router.get("/google", (req, res) => {
     return res.status(500).json({ success: false, error: "Google OAuth غير مضبوط" });
   }
 
-  const redirectUri = `${BASE_URL}/api/auth/google/callback`;
+  const redirectUri = `${BASE_URL}/api/auth/callback/google`;
+
   const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile`;
 
   res.redirect(url);
 });
 
-router.get("/google/callback", async (req, res) => {
+router.get("/callback/google", async (req, res) => {
   try {
     const { code } = req.query;
     if (!code) {
       return res.redirect(`${FRONTEND_URL}/login?error=google_auth_failed`);
     }
 
-    const redirectUri = `${BASE_URL}/api/auth/google/callback`;
+    const redirectUri = `${BASE_URL}/api/auth/callback/google`;
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -186,20 +187,20 @@ router.get("/discord", (req, res) => {
     return res.status(500).json({ success: false, error: "Discord OAuth غير مضبوط" });
   }
 
-  const redirectUri = `${BASE_URL}/api/auth/discord/callback`;
+  const redirectUri = `${BASE_URL}/api/auth/callback/discord`;
   const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=identify%20email`;
 
   res.redirect(url);
 });
 
-router.get("/discord/callback", async (req, res) => {
+router.get("/callback/discord", async (req, res) => {
   try {
     const { code } = req.query;
     if (!code) {
       return res.redirect(`${FRONTEND_URL}/login?error=discord_auth_failed`);
     }
 
-    const redirectUri = `${BASE_URL}/api/auth/discord/callback`;
+    const redirectUri = `${BASE_URL}/api/auth/callback/discord`;
     const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },

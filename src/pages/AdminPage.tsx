@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../components/Toast";
@@ -6,6 +6,11 @@ import {
   fetchAddMovie,
   fetchMovies,
   fetchDeleteMovie,
+  fetchMediaDetail,
+  fetchAddEpisode,
+  fetchDeleteEpisode,
+  fetchAddServerLink,
+  fetchDeleteServerLink,
 } from "../services/adminApi";
 import {
   Film,
@@ -18,17 +23,22 @@ import {
   ImageOff,
   Search,
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  Link as LinkIcon,
+  Clapperboard,
 } from "lucide-react";
 
 interface MovieItem {
-  _id: string;
+  id: string;
   tmdbId: string;
   title: string;
+  arabicTitle?: string;
   description: string;
   posterPath: string;
-  category: "movie" | "series";
+  category: string;
   createdAt: string;
-  videoUrl: string;
+  _count?: { episodes: number; serverLinks: number };
 }
 
 export default function AdminPage() {
@@ -41,13 +51,22 @@ export default function AdminPage() {
   const [movies, setMovies] = useState<MovieItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedData, setExpandedData] = useState<any>(null);
+  const [expandedLoading, setExpandedLoading] = useState(false);
+  const [newEpisode, setNewEpisode] = useState({ season: "1", episode: "1", title: "" });
+  const [newLink, setNewLink] = useState({ server: "custom", label: "", url: "", type: "iframe", priority: "0", episodeId: "" });
+  const [submittingEp, setSubmittingEp] = useState(false);
+  const [submittingLink, setSubmittingLink] = useState(false);
+  const [deletingEp, setDeletingEp] = useState<string | null>(null);
+  const [deletingLink, setDeletingLink] = useState<string | null>(null);
 
   const loadMovies = useCallback(async () => {
     setLoading(true);
     try {
       const result = await fetchMovies();
       if (result.success) {
-        setMovies(result.movies);
+        setMovies(result.items || []);
       } else {
         toast("فشل في تحميل البيانات من قاعدة البيانات");
       }
@@ -107,9 +126,90 @@ export default function AdminPage() {
     }
   };
 
+  const toggleExpand = async (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null);
+      setExpandedData(null);
+      return;
+    }
+    setExpandedId(id);
+    setExpandedLoading(true);
+    try {
+      const result = await fetchMediaDetail(id);
+      if (result.success) setExpandedData(result.media);
+    } catch {}
+    setExpandedLoading(false);
+  };
+
+  const handleAddEpisode = async (mediaId: string) => {
+    if (!newEpisode.title.trim() || !newEpisode.season || !newEpisode.episode) {
+      toast("الرجاء ملء جميع الحقول");
+      return;
+    }
+    setSubmittingEp(true);
+    try {
+      const result = await fetchAddEpisode(mediaId, parseInt(newEpisode.season), parseInt(newEpisode.episode), newEpisode.title.trim());
+      if (result.success) {
+        toast("تم إضافة الحلقة");
+        setNewEpisode({ season: "1", episode: "1", title: "" });
+        toggleExpand(mediaId);
+      } else {
+        toast(result.error || "فشل في الإضافة");
+      }
+    } catch {
+      toast("تعذر الاتصال");
+    }
+    setSubmittingEp(false);
+  };
+
+  const handleDeleteEpisode = async (episodeId: string, mediaId: string) => {
+    setDeletingEp(episodeId);
+    try {
+      const result = await fetchDeleteEpisode(episodeId);
+      if (result.success) {
+        toast("تم حذف الحلقة");
+        toggleExpand(mediaId);
+      }
+    } catch {}
+    setDeletingEp(null);
+  };
+
+  const handleAddLink = async (mediaId: string) => {
+    if (!newLink.url.trim() || !newLink.label.trim()) {
+      toast("الرابط والاسم مطلوبان");
+      return;
+    }
+    setSubmittingLink(true);
+    try {
+      const result = await fetchAddServerLink(mediaId, newLink.url.trim(), newLink.server, newLink.label.trim(), newLink.type, parseInt(newLink.priority) || 0, newLink.episodeId || undefined);
+      if (result.success) {
+        toast("تم إضافة الرابط");
+        setNewLink({ server: "custom", label: "", url: "", type: "iframe", priority: "0", episodeId: "" });
+        toggleExpand(mediaId);
+      } else {
+        toast(result.error || "فشل في الإضافة");
+      }
+    } catch {
+      toast("تعذر الاتصال");
+    }
+    setSubmittingLink(false);
+  };
+
+  const handleDeleteLink = async (linkId: string, mediaId: string) => {
+    setDeletingLink(linkId);
+    try {
+      const result = await fetchDeleteServerLink(linkId);
+      if (result.success) {
+        toast("تم حذف الرابط");
+        toggleExpand(mediaId);
+      }
+    } catch {}
+    setDeletingLink(null);
+  };
+
   const stats = {
     movies: movies.filter((m) => m.category === "movie").length,
-    series: movies.filter((m) => m.category === "series").length,
+    series: movies.filter((m) => m.category === "series" || m.category === "anime").length,
   };
 
   if (authLoading) {
@@ -239,65 +339,144 @@ export default function AdminPage() {
                   <th className="pb-3 font-medium w-14">بوستر</th>
                   <th className="pb-3 font-medium">العنوان</th>
                   <th className="pb-3 font-medium w-24">التصنيف</th>
-                  <th className="pb-3 font-medium w-32 hidden sm:table-cell">تاريخ الإضافة</th>
+                  <th className="pb-3 font-medium w-40 hidden sm:table-cell">الحلقات · الروابط</th>
                   <th className="pb-3 font-medium w-16"></th>
+                  <th className="pb-3 font-medium w-10"></th>
                 </tr>
               </thead>
               <tbody>
                 {movies.map((movie) => (
-                  <tr key={movie._id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
-                    <td className="py-3">
-                      <div className="w-12 h-16 rounded-lg overflow-hidden bg-gray-800 ring-1 ring-gray-700/50">
-                        {movie.posterPath ? (
-                          <img
-                            src={movie.posterPath}
-                            alt={movie.title}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ImageOff className="w-4 h-4 text-gray-600" />
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3">
-                      <span className="text-white text-sm font-medium line-clamp-2">{movie.title}</span>
-                    </td>
-                    <td className="py-3">
-                      <span
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-                          movie.category === "movie"
-                            ? "bg-rose-600/20 text-rose-400"
-                            : "bg-purple-600/20 text-purple-400"
-                        }`}
-                      >
-                        {movie.category === "movie" ? "فيلم" : "مسلسل"}
-                      </span>
-                    </td>
-                    <td className="py-3 text-gray-400 text-xs hidden sm:table-cell">
-                      {new Date(movie.createdAt).toLocaleDateString("ar-SA", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </td>
-                    <td className="py-3">
-                      <button
-                        onClick={() => handleDelete(movie._id)}
-                        disabled={deleting === movie._id}
-                        className="p-2 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 disabled:opacity-50 transition-colors"
-                        title="حذف"
-                      >
-                        {deleting === movie._id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
-                    </td>
-                  </tr>
+                  <React.Fragment key={movie.id}>
+                    <tr className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                      <td className="py-3">
+                        <div className="w-12 h-16 rounded-lg overflow-hidden bg-gray-800 ring-1 ring-gray-700/50">
+                          {movie.posterPath ? (
+                            <img src={movie.posterPath} alt={movie.title} className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ImageOff className="w-4 h-4 text-gray-600" />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3">
+                        <span className="text-white text-sm font-medium line-clamp-2">{movie.title || movie.arabicTitle}</span>
+                      </td>
+                      <td className="py-3">
+                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                          movie.category === "movie" ? "bg-rose-600/20 text-rose-400" : "bg-purple-600/20 text-purple-400"
+                        }`}>{movie.category === "movie" ? "فيلم" : "مسلسل"}</span>
+                      </td>
+                      <td className="py-3 text-gray-400 text-xs hidden sm:table-cell">
+                        <span className="block">{movie._count?.episodes || 0} حلقات · {movie._count?.serverLinks || 0} روابط</span>
+                        <span className="block text-gray-500">{new Date(movie.createdAt).toLocaleDateString("ar-SA", { year: "numeric", month: "short", day: "numeric" })}</span>
+                      </td>
+                      <td className="py-3">
+                        <button onClick={() => handleDelete(movie.id)} disabled={deleting === movie.id}
+                          className="p-2 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 disabled:opacity-50 transition-colors" title="حذف">
+                          {deleting === movie.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        </button>
+                      </td>
+                      <td className="py-3">
+                        <button onClick={() => toggleExpand(movie.id)}
+                          className="p-2 rounded-lg bg-gray-700/50 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors" title="إدارة">
+                          {expandedId === movie.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </button>
+                      </td>
+                    </tr>
+                    {expandedId === movie.id && (
+                      <tr>
+                        <td colSpan={6} className="p-4 bg-gray-900/50 border-b border-gray-800/50">
+                          {expandedLoading ? (
+                            <div className="flex justify-center py-4"><Loader2 className="w-6 h-6 text-rose-400 animate-spin" /></div>
+                          ) : expandedData ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              {/* Episodes */}
+                              <div>
+                                <h4 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
+                                  <Clapperboard className="w-4 h-4 text-rose-400" /> الحلقات ({expandedData.episodes?.length || 0})
+                                </h4>
+                                {expandedData.episodes?.length > 0 && (
+                                  <div className="space-y-1 mb-3 max-h-40 overflow-y-auto">
+                                    {expandedData.episodes.map((ep: any) => (
+                                      <div key={ep.id} className="flex items-center justify-between bg-gray-800/50 px-3 py-1.5 rounded-lg text-xs">
+                                        <span className="text-gray-300">S{ep.seasonNumber}E{ep.episodeNumber} — {ep.title || "بدون عنوان"}</span>
+                                        <button onClick={() => handleDeleteEpisode(ep.id, movie.id)} disabled={deletingEp === ep.id}
+                                          className="p-1 rounded text-red-400 hover:bg-red-600/20 disabled:opacity-40">
+                                          {deletingEp === ep.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="flex flex-wrap gap-2">
+                                  <input type="number" value={newEpisode.season} onChange={(e) => setNewEpisode({ ...newEpisode, season: e.target.value })}
+                                    className="w-16 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs text-center" placeholder="S" />
+                                  <input type="number" value={newEpisode.episode} onChange={(e) => setNewEpisode({ ...newEpisode, episode: e.target.value })}
+                                    className="w-16 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs text-center" placeholder="E" />
+                                  <input type="text" value={newEpisode.title} onChange={(e) => setNewEpisode({ ...newEpisode, title: e.target.value })}
+                                    className="flex-1 min-w-[120px] bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs" placeholder="عنوان الحلقة" />
+                                  <button onClick={() => handleAddEpisode(movie.id)} disabled={submittingEp}
+                                    className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 disabled:bg-gray-700 text-white text-xs rounded-lg transition flex items-center gap-1">
+                                    {submittingEp ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />} إضافة
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Server Links */}
+                              <div>
+                                <h4 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
+                                  <LinkIcon className="w-4 h-4 text-blue-400" /> روابط السيرفرات ({expandedData.serverLinks?.length || 0})
+                                </h4>
+                                {expandedData.serverLinks?.length > 0 && (
+                                  <div className="space-y-1 mb-3 max-h-40 overflow-y-auto">
+                                    {expandedData.serverLinks.map((lnk: any) => (
+                                      <div key={lnk.id} className="flex items-center justify-between bg-gray-800/50 px-3 py-1.5 rounded-lg text-xs">
+                                        <span className="text-gray-300 truncate ml-2">{lnk.label} <span className="text-gray-500">({lnk.server})</span></span>
+                                        <button onClick={() => handleDeleteLink(lnk.id, movie.id)} disabled={deletingLink === lnk.id}
+                                          className="p-1 rounded text-red-400 hover:bg-red-600/20 disabled:opacity-40 shrink-0">
+                                          {deletingLink === lnk.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="flex flex-wrap gap-2">
+                                  <select value={newLink.server} onChange={(e) => setNewLink({ ...newLink, server: e.target.value })}
+                                    className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs">
+                                    <option value="custom">مخصص</option>
+                                    <option value="akwam">أكوام</option>
+                                    <option value="arabseed">عرب سيد</option>
+                                    <option value="vidsrc">VidSrc</option>
+                                    <option value="embed_su">Embed.su</option>
+                                    <option value="multiembed">MultiEmbed</option>
+                                  </select>
+                                  <input type="text" value={newLink.label} onChange={(e) => setNewLink({ ...newLink, label: e.target.value })}
+                                    className="flex-1 min-w-[100px] bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs" placeholder="الاسم" />
+                                  <input type="text" value={newLink.url} onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
+                                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs" placeholder="رابط السيرفر" />
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  <select value={newLink.type} onChange={(e) => setNewLink({ ...newLink, type: e.target.value })}
+                                    className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs">
+                                    <option value="iframe">Iframe</option>
+                                    <option value="m3u8">M3U8</option>
+                                    <option value="mp4">MP4</option>
+                                  </select>
+                                  <input type="number" value={newLink.priority} onChange={(e) => setNewLink({ ...newLink, priority: e.target.value })}
+                                    className="w-16 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs text-center" placeholder="0" title="الأولوية" />
+                                  <button onClick={() => handleAddLink(movie.id)} disabled={submittingLink}
+                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white text-xs rounded-lg transition flex items-center gap-1">
+                                    {submittingLink ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />} إضافة رابط
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : null}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>

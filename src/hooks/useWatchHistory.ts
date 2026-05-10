@@ -1,9 +1,16 @@
+import { startWatching } from "../services/vpsApi";
+
 export const addToWatchHistory = (item: {
   id: number;
   type: "movie" | "tv";
   title: string;
   poster_path: string;
 }) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    startWatching(String(item.id));
+  }
+
   const stored = localStorage.getItem("watch_history");
   const history = stored ? JSON.parse(stored) : [];
 
