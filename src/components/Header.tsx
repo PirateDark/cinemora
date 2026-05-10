@@ -233,10 +233,13 @@ export default function Header() {
           ) : (
             <Link
               to="/login"
-              className="flex items-center gap-2 px-4 py-1.5 bg-transparent border-2 border-[#ff0055] text-[#ff0055] text-sm font-bold rounded-full transition-all duration-300 hover:bg-[#ff0055] hover:text-white hover:shadow-[0_0_15px_#ff0055] active:scale-95"
+              className="relative group overflow-hidden px-6 py-2 bg-transparent border-2 border-[#ff0055] text-[#ff0055] font-bold rounded-full transition-all duration-500 hover:bg-[#ff0055] hover:text-white hover:shadow-[0_0_20px_#ff0055] active:scale-95 flex items-center gap-2"
             >
-              <LogIn size={16} />
-              <span>تسجيل الدخول</span>
+              <span className="relative z-10 flex items-center gap-2">
+                <LogIn size={18} className="group-hover:animate-pulse" />
+                دخول
+              </span>
+              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </Link>
           )}
           <button
