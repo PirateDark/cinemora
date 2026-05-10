@@ -175,10 +175,10 @@ export default function Header() {
           ) : (
             <Link
               to="/login"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-all"
+              className="flex items-center gap-2 px-4 py-2 mr-3 rounded-xl text-sm font-bold text-white bg-gradient-to-l from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 shadow-lg shadow-rose-600/25 hover:shadow-rose-500/40 transition-all active:scale-[0.97]"
             >
               <LogIn className="w-4 h-4" />
-              <span className="hidden lg:inline">دخول</span>
+              <span>دخول</span>
             </Link>
           )}
           <button
@@ -344,7 +344,14 @@ export default function Header() {
                 <span>تسجيل الخروج — {user.name}</span>
               </button>
             ) : (
-              <MobileNavItem to="/login" icon={<LogIn className="w-4 h-4" />} label="تسجيل الدخول" onClose={() => setIsMenuOpen(false)} />
+              <Link
+                to="/login"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition w-full bg-gradient-to-l from-rose-600 to-rose-500 text-white active:scale-[0.98] shadow-lg shadow-rose-600/30"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>تسجيل الدخول</span>
+              </Link>
             )}
 
             {canInstall && (
