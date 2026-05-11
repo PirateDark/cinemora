@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { handleToken, user } = useAuth();
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -16,11 +18,15 @@ export default function AuthCallback() {
     }
 
     if (token) {
-      localStorage.setItem("token", token);
+      handleToken(token);
     }
-
-    navigate("/", { replace: true });
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
