@@ -6,6 +6,7 @@ import { getVideoSources } from "../services/proxyApi";
 import MediaInfo from "../components/MediaInfo";
 import EpisodeSelector from "../components/EpisodeSelector";
 import VideoPlayer from "../components/VideoPlayer";
+import WatchPageSkeleton from "../components/WatchPageSkeleton";
 import SEO from "../components/SEO";
 import { addToWatchHistory } from "../hooks/useWatchHistory";
 
@@ -187,16 +188,19 @@ export default function WatchPage() {
   const currentM3u8Url = activeServer?.type === "m3u8" ? activeServer.url : null;
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-rose-500" />
-      </div>
-    );
+    return <WatchPageSkeleton />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950">
-      <SEO title={mediaDetails ? `مشاهدة ${mediaDetails.title}${!isMovie ? ` - حلقة ${selectedEpisode}` : ""}` : "مشاهدة"} />
+      <SEO
+        title={mediaDetails ? `مشاهدة ${mediaDetails.title}${!isMovie ? ` - حلقة ${selectedEpisode}` : ""}` : "مشاهدة"}
+        description={mediaDetails?.overview ? `شاهد ${mediaDetails.title} - ${mediaDetails.overview.slice(0, 160)}` : undefined}
+        keywords={`${mediaDetails?.title || ""}, ${isMovie ? "فيلم" : "مسلسل"}, مشاهدة, اونلاين, ${(mediaDetails?.genres || []).join(", ")}`}
+        image={mediaDetails?.poster ? mediaDetails.poster.replace("w200", "w500") : undefined}
+        url={`https://cinemora-theta.vercel.app/watch/${type}/${id}${!isMovie ? `/${selectedSeason}/${selectedEpisode}` : ""}`}
+        type={isMovie ? "video.movie" : "video.tv_show"}
+      />
 
       {/* Ambient Background from Poster */}
       {mediaDetails?.poster && (

@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Shield, Search, Star, Film, Tv, Download, LogIn, LogOut, User, ChevronDown, Crown } from "lucide-react";
+import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Shield, Search, Star, Film, Tv, Download, LogIn, LogOut, User, ChevronDown, Crown, Moon, Sun } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import { useFamilyMode } from "../hooks/useFamilyMode";
@@ -52,6 +52,25 @@ export default function Header() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const [canInstall, setCanInstall] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") !== "light";
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (darkMode) {
+      root.classList.add("dark");
+      root.style.colorScheme = "dark";
+      localStorage.setItem("theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      root.style.colorScheme = "light";
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).__pwaInstallEvent) {
@@ -249,6 +268,15 @@ export default function Header() {
             </Link>
           )}
 
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="flex items-center gap-1.5 px-3 py-2 h-10 rounded-full text-sm font-bold transition-all duration-300 border border-gray-700/50 bg-gray-800/50 text-gray-400 hover:bg-gray-700/50 hover:text-gray-300"
+            title={darkMode ? "الوضع النهاري" : "الوضع الليلي"}
+          >
+            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+
           {/* Family Mode */}
           <button
             onClick={toggleEnabled}
@@ -394,6 +422,14 @@ export default function Header() {
           </div>
 
           <div className="border-t border-gray-800/30 pt-3 mt-2 space-y-2">
+            <button
+              onClick={() => { setDarkMode(!darkMode); setIsMenuOpen(false); }}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition w-full bg-gray-800/50 text-gray-300 active:bg-gray-700/50 border border-gray-700/30"
+            >
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <span>{darkMode ? "الوضع النهاري" : "الوضع الليلي"}</span>
+            </button>
+
             <button
               onClick={() => { toggleEnabled(); setIsMenuOpen(false); }}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition w-full ${

@@ -45,7 +45,7 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
       <HelmetProvider>
       <ToastProvider>
       <AuthProvider>

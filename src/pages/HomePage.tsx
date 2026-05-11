@@ -6,13 +6,16 @@ import {
   getUpcomingMovies,
   getTopRatedMovies,
   getTopRatedTvShows,
+  searchMulti,
   TmdbMovie,
   TmdbTvShow,
 } from "../services/tmdbApi";
+import { useDebounce } from "../hooks/useDebounce";
 import MediaCard from "../components/MediaCard";
 import MediaSkeleton from "../components/MediaSkeleton";
+import SearchBar from "../components/SearchBar";
 import SEO from "../components/SEO";
-import { Play, ChevronLeft, ChevronRight, Star, RefreshCw, Info } from "lucide-react";
+import { Play, ChevronLeft, ChevronRight, Star, RefreshCw, Info, Search } from "lucide-react";
 
 interface HeroItem {
   id: number;
@@ -210,8 +213,13 @@ function Section({
 }
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const [heroItems, setHeroItems] = useState<HeroItem[]>([]);
   const [heroLoading, setHeroLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<(TmdbMovie | TmdbTvShow)[]>([]);
+  const [searching, setSearching] = useState(false);
+  const debouncedSearch = useDebounce(searchQuery, 400);
 
   useEffect(() => {
     const fetchHero = async () => {
@@ -246,9 +254,65 @@ export default function HomePage() {
     fetchHero();
   }, []);
 
+  useEffect(() => {
+    if (!debouncedSearch.trim()) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    searchMulti(debouncedSearch).then((data) => {
+      const filtered = data.filter(
+        (item: any) => (item.media_type === "movie" || item.media_type === "tv") && item.poster_path
+      );
+      setSearchResults(filtered.slice(0, 12));
+    }).catch(() => {}).finally(() => setSearching(false));
+  }, [debouncedSearch]);
+
   return (
     <div className="space-y-4">
       <SEO title="الرئيسية - عالم الدراما والسينما" />
+
+      {/* Search Section */}
+      <div className="mb-8">
+        <div className="relative max-w-2xl mx-auto">
+          <SearchBar
+            value={searchQuery}
+            onChange={(v) => setSearchQuery(v)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && searchQuery.trim()) {
+                navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+              }
+            }}
+            placeholder="ابحث عن فيلم أو مسلسل..."
+            className="w-full bg-gray-800/50 border-2 border-gray-700/50 rounded-2xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-rose-500/50 focus:bg-gray-800/80 transition-all text-base"
+          />
+        </div>
+      </div>
+
+      {/* Search Results */}
+      {searchQuery.trim() && (
+        <div className="mb-12">
+          <h2 className="text-xl font-bold mb-5 flex items-center gap-2 text-white">
+            <Search className="w-5 h-5 text-rose-500" /> نتائج البحث عن "{searchQuery}"
+          </h2>
+          {searching ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => <MediaSkeleton key={i} />)}
+            </div>
+          ) : searchResults.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {searchResults.map((item: any) => (
+                <MediaCard key={item.id} media={item} type={item.media_type} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-8">لا توجد نتائج</p>
+          )}
+        </div>
+      )}
+
+      {!searchQuery.trim() && (<>
       {heroLoading ? (
         <div className="w-full h-[460px] md:h-[620px] rounded-3xl bg-gray-800/50 animate-pulse mb-16 shimmer" />
       ) : (
@@ -260,6 +324,7 @@ export default function HomePage() {
       <Section title="⭐ أعلى تقييماً (أفلام)" fetcher={() => getTopRatedMovies(1)} type="movie" />
       <Section title="⭐ أعلى تقييماً (مسلسلات)" fetcher={() => getTopRatedTvShows(1)} type="tv" />
       <Section title="🔜 قادم قريباً" fetcher={() => getUpcomingMovies(1)} type="movie" />
+      </>)}
     </div>
   );
 }
