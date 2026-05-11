@@ -35,6 +35,7 @@ const ArabicTvPage = lazy(() => import("./pages/ArabicTvPage"));
 const AsianMoviesPage = lazy(() => import("./pages/AsianMoviesPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const AuthCallback = lazy(() => import("./components/AuthCallback"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function App() {
@@ -84,10 +85,9 @@ function App() {
             <Route path="/movies/asian" element={<AsianMoviesPage />} />
 
             <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/auth/callback"
-              element={<LoginPage />}
-            />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth/google/callback" element={<AuthCallback />} />
+            <Route path="/auth/discord/callback" element={<AuthCallback />} />
             <Route
               path="/admin"
               element={
