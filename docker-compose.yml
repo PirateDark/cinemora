@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cinemora-db
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: cinemora
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cinemora_secret_2024}
+      POSTGRES_DB: cinemora
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cinemora"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: cinemora-cache
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  engine:
+    build:
+      context: ./vps-engine
+      dockerfile: Dockerfile
+    container_name: cinemora-engine
+    restart: unless-stopped
+    ports:
+      - "5555:5555"
+    environment:
+      NODE_ENV: production
+      PORT: 5555
+      DATABASE_URL: postgresql://cinemora:${POSTGRES_PASSWORD:-cinemora_secret_2024}@postgres:5432/cinemora
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-cinemora-jwt-secret-2024}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+      BASE_URL: ${BASE_URL:-http://localhost:5555}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-saadshaban1995@gmail.com}
+      ADMIN_KEY: ${ADMIN_KEY:-admin123}
+      TMDB_API_KEY: ${TMDB_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - engine_data:/app/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  engine_data:
