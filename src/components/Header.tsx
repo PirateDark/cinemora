@@ -1,13 +1,9 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Shield, Search, Star, Film, Tv, Download, LogIn, LogOut, User, ChevronDown, Crown, Moon, Sun } from "lucide-react";
+import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Shield, Download, LogIn, LogOut, User, ChevronDown, Crown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { useDebounce } from "../hooks/useDebounce";
 import { useFamilyMode } from "../hooks/useFamilyMode";
-import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import { searchMulti } from "../services/tmdbApi";
 import NavDropdown from "./NavDropdown";
 import MobileNavItem from "./MobileNavItem";
-import SearchBar from "./SearchBar";
 import { useAuth } from "../contexts/AuthContext";
 
 const dropdownItems = {
@@ -35,42 +31,16 @@ const navLinks = [
 ];
 
 export default function Header() {
-  useKeyboardShortcuts({ "/": () => navigate("/search") });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
-  const [searchResults, setSearchResults] = useState<
-    { id: number; title: string; poster_path?: string; media_type: string; vote_average?: number; date?: string }[]
-  >([]);
-  const [showResults, setShowResults] = useState(false);
-  const debouncedQuery = useDebounce(searchQuery, 400);
   const navigate = useNavigate();
   const location = useLocation();
   const { settings, toggleEnabled } = useFamilyMode();
   const { user, logout } = useAuth();
-  const searchRef = useRef<HTMLDivElement>(null);
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const userMenuRef = useRef<HTMLDivElement>(null);
   const [canInstall, setCanInstall] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") !== "light";
-    }
-    return true;
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (darkMode) {
-      root.classList.add("dark");
-      root.style.colorScheme = "dark";
-      localStorage.setItem("theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      root.style.colorScheme = "light";
-      localStorage.setItem("theme", "light");
-    }
-  }, [darkMode]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).__pwaInstallEvent) {
@@ -88,35 +58,7 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    if (!debouncedQuery.trim()) {
-      setSearchResults([]);
-      setShowResults(false);
-      return;
-    }
-    searchMulti(debouncedQuery).then((data) => {
-      const filtered = data
-        .filter((item: { media_type?: string; poster_path?: string }) =>
-          (item.media_type === "movie" || item.media_type === "tv") && item.poster_path
-        )
-        .slice(0, 5)
-        .map((item: { id: number; title?: string; name?: string; poster_path?: string; media_type: string; vote_average?: number; release_date?: string; first_air_date?: string }) => ({
-          id: item.id,
-          title: item.title || item.name || "",
-          poster_path: item.poster_path,
-          media_type: item.media_type,
-          vote_average: item.vote_average,
-          date: item.release_date || item.first_air_date,
-        }));
-      setSearchResults(filtered);
-      setShowResults(true);
-    }).catch(() => {});
-  }, [debouncedQuery]);
-
-  useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setShowResults(false);
-      }
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setShowUserMenu(false);
       }
@@ -130,7 +72,6 @@ export default function Header() {
   }, [location.pathname]);
 
   const goToHome = () => {
-    setSearchQuery("");
     navigate("/");
   };
 
@@ -194,14 +135,14 @@ export default function Header() {
         {/* Left - User Actions: Login, FamilyMode, Search (left to right) */}
         <div className="hidden md:flex items-center gap-4">
           {/* Login / User Menu */}
-          {user ? (
+          {token ? (
             <div ref={userMenuRef} className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 group"
               >
                 <div className="w-[35px] h-[35px] rounded-full overflow-hidden border-2 border-[#ff0055] shadow-[0_0_10px_rgba(255,0,85,0.5)] transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(255,0,85,0.7)]">
-                  {user.avatar ? (
+                  {user?.avatar ? (
                     <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-gray-700 flex items-center justify-center">
@@ -215,11 +156,11 @@ export default function Header() {
               {showUserMenu && (
                 <div className="absolute top-full left-0 mt-2 w-56 bg-gray-900/98 backdrop-blur-xl border border-gray-700/50 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-fadeIn">
                   <div className="px-4 py-3 border-b border-gray-800/50">
-                    <p className="text-white text-sm font-medium truncate">{user.name}</p>
-                    <p className="text-gray-500 text-xs truncate">{user.email}</p>
+                    <p className="text-white text-sm font-medium truncate">{user?.name || "المستخدم"}</p>
+                    <p className="text-gray-500 text-xs truncate">{user?.email || ""}</p>
                   </div>
                   <div className="py-1">
-                    {user.role === "admin" && (
+                    {user?.role === "admin" && (
                       <Link
                         to="/admin"
                         onClick={() => setShowUserMenu(false)}
@@ -248,7 +189,7 @@ export default function Header() {
                   </div>
                   <div className="border-t border-gray-800/50 py-1">
                     <button
-                      onClick={() => { logout(); setShowUserMenu(false); }}
+                      onClick={() => { logout(); setShowUserMenu(false); navigate("/"); }}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-600/10 transition-colors w-full text-right"
                     >
                       <LogOut className="w-4 h-4" />
@@ -268,15 +209,6 @@ export default function Header() {
             </Link>
           )}
 
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="flex items-center gap-1.5 px-3 py-2 h-10 rounded-full text-sm font-bold transition-all duration-300 border border-gray-700/50 bg-gray-800/50 text-gray-400 hover:bg-gray-700/50 hover:text-gray-300"
-            title={darkMode ? "الوضع النهاري" : "الوضع الليلي"}
-          >
-            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-
           {/* Family Mode */}
           <button
             onClick={toggleEnabled}
@@ -291,76 +223,6 @@ export default function Header() {
             <span className="hidden lg:inline">وضع عائلي</span>
             {settings.enabled && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />}
           </button>
-
-          {/* Search Bar */}
-          <div ref={searchRef} className="relative max-w-[200px] flex-shrink-0">
-            <SearchBar
-              value={searchQuery}
-              onChange={(v) => {
-                setSearchQuery(v);
-                if (!v.trim()) setShowResults(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && searchQuery.trim()) {
-                  setShowResults(false);
-                  navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-                }
-              }}
-              className="rounded-full bg-white/5 border border-white/10 hover:bg-white/10 focus-within:bg-white/10 focus-within:border-rose-500/30"
-            />
-            {showResults && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900/98 backdrop-blur-xl border border-gray-700/50 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-fadeIn">
-                <div className="max-h-80 overflow-y-auto">
-                  {searchResults.map((result) => (
-                    <Link
-                      key={`${result.media_type}-${result.id}`}
-                      to={`/${result.media_type}/${result.id}`}
-                      onClick={() => { setShowResults(false); setSearchQuery(""); }}
-                      className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800/80 transition-colors border-b border-gray-800/30 last:border-0 group"
-                    >
-                      <div className="w-10 h-14 rounded-lg overflow-hidden bg-gray-800 shrink-0 ring-1 ring-gray-700/50 group-hover:ring-rose-500/30 transition-all">
-                        {result.poster_path ? (
-                          <img
-                            src={`https://image.tmdb.org/t/p/w92${result.poster_path}`}
-                            alt={result.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-600">
-                            {result.media_type === "movie" ? <Film className="w-4 h-4" /> : <Tv className="w-4 h-4" />}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate group-hover:text-rose-300 transition-colors">{result.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded">
-                            {result.media_type === "movie" ? "فيلم" : "مسلسل"}
-                          </span>
-                          {result.vote_average != null && result.vote_average > 0 && (
-                            <span className="text-[10px] text-yellow-400 flex items-center gap-0.5">
-                              <Star className="w-2.5 h-2.5 fill-yellow-400" /> {result.vote_average.toFixed(1)}
-                            </span>
-                          )}
-                          {result.date && (
-                            <span className="text-[10px] text-gray-500">{new Date(result.date).getFullYear()}</span>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-                <Link
-                  to={`/search?q=${encodeURIComponent(debouncedQuery)}`}
-                  onClick={() => { setShowResults(false); }}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-800/50 hover:bg-gray-800 text-gray-400 hover:text-white text-xs font-medium transition-colors border-t border-gray-800/30"
-                >
-                  <Search className="w-3 h-3" />
-                  عرض كل النتائج
-                </Link>
-              </div>
-            )}
-          </div>
         </div>
 
         <div className="md:hidden flex items-center gap-1">
@@ -386,10 +248,6 @@ export default function Header() {
 
       {isMenuOpen && (
         <div className="md:hidden bg-gray-900/98 backdrop-blur-xl border-t border-gray-800/50 py-4 px-4 flex flex-col gap-1 animate-slideDown max-h-[85vh] overflow-y-auto">
-          <div className="mb-3">
-            <SearchBar value={searchQuery} onChange={setSearchQuery} />
-          </div>
-
           <div className="border-b border-gray-800/30 pb-2 mb-1">
             <MobileNavItem to="/" icon={<Home className="w-4 h-4" />} label="الرئيسية" onClose={() => setIsMenuOpen(false)} onClick={goToHome} />
           </div>
@@ -423,14 +281,6 @@ export default function Header() {
 
           <div className="border-t border-gray-800/30 pt-3 mt-2 space-y-2">
             <button
-              onClick={() => { setDarkMode(!darkMode); setIsMenuOpen(false); }}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition w-full bg-gray-800/50 text-gray-300 active:bg-gray-700/50 border border-gray-700/30"
-            >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              <span>{darkMode ? "الوضع النهاري" : "الوضع الليلي"}</span>
-            </button>
-
-            <button
               onClick={() => { toggleEnabled(); setIsMenuOpen(false); }}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition w-full ${
                 settings.enabled
@@ -442,11 +292,11 @@ export default function Header() {
               <span>{settings.enabled ? "الوضع العائلي: مفعل" : "الوضع العائلي"}</span>
             </button>
 
-            {user ? (
+            {token ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700/30">
                   <div className="w-[38px] h-[38px] rounded-full overflow-hidden ring-2 ring-gray-700 shrink-0">
-                    {user.avatar ? (
+                    {user?.avatar ? (
                       <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-gray-700 flex items-center justify-center">
@@ -455,17 +305,17 @@ export default function Header() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{user.name}</p>
-                    <p className="text-gray-500 text-xs truncate">{user.email}</p>
+                    <p className="text-white text-sm font-medium truncate">{user?.name || "المستخدم"}</p>
+                    <p className="text-gray-500 text-xs truncate">{user?.email || ""}</p>
                   </div>
                 </div>
-                {user.role === "admin" && (
+                {user?.role === "admin" && (
                   <MobileNavItem to="/admin" icon={<Shield className="w-4 h-4 text-rose-400" />} label="لوحة التحكم" onClose={() => setIsMenuOpen(false)} />
                 )}
                 <MobileNavItem to="/watchlist" icon={<Bookmark className="w-4 h-4 text-amber-400" />} label="قائمة المشاهدة" onClose={() => setIsMenuOpen(false)} />
                 <MobileNavItem to="/favorites" icon={<Heart className="w-4 h-4 text-red-400" />} label="المفضلة" onClose={() => setIsMenuOpen(false)} />
                 <button
-                  onClick={() => { logout(); setIsMenuOpen(false); }}
+                  onClick={() => { logout(); setIsMenuOpen(false); navigate("/"); }}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition w-full text-red-400 hover:bg-red-600/10 border border-gray-700/30"
                 >
                   <LogOut className="w-4 h-4" />
