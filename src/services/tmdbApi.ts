@@ -493,6 +493,20 @@ export const getArabicTvShows = async (page = 1) => {
   return result;
 };
 
+export const getMoviesByGenre = async (genreId: number, page: number = 1) => {
+  const res = await axios.get(`${TMDB_BASE_URL}/discover/movie`, {
+    params: { api_key: TMDB_API_KEY, with_genres: genreId, page, language: "ar" },
+  });
+  return { results: res.data.results as TmdbMovie[], total_pages: res.data.total_pages };
+};
+
+export const getTvByGenre = async (genreId: number, page: number = 1) => {
+  const res = await axios.get(`${TMDB_BASE_URL}/discover/tv`, {
+    params: { api_key: TMDB_API_KEY, with_genres: genreId, page, language: "ar" },
+  });
+  return { results: res.data.results as TmdbTvShow[], total_pages: res.data.total_pages };
+};
+
 export const getSeasonDetails = async (tvId: number, seasonNumber: number) => {
   const [enRes, arRes] = await Promise.all([
     axios.get(`${TMDB_BASE_URL}/tv/${tvId}/season/${seasonNumber}`, {

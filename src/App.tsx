@@ -33,6 +33,7 @@ const TurkishMoviesPage = lazy(() => import("./pages/TurkishMoviesPage"));
 const ArabicMoviesPage = lazy(() => import("./pages/ArabicMoviesPage"));
 const ArabicTvPage = lazy(() => import("./pages/ArabicTvPage"));
 const AsianMoviesPage = lazy(() => import("./pages/AsianMoviesPage"));
+const GenrePage = lazy(() => import("./pages/GenrePage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -97,6 +98,7 @@ function App() {
               }
             />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/genre/:slug" element={<GenrePage />} />
             <Route path="/contact" element={<ContactPage />} />
 
             <Route path="*" element={<NotFoundPage />} />

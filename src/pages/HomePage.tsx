@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   getPopularMovies,
   getPopularTvShows,
@@ -15,7 +15,7 @@ import MediaCard from "../components/MediaCard";
 import MediaSkeleton from "../components/MediaSkeleton";
 import SearchBar from "../components/SearchBar";
 import SEO from "../components/SEO";
-import { Play, ChevronLeft, ChevronRight, Star, RefreshCw, Info, Search } from "lucide-react";
+import { Play, ChevronLeft, ChevronRight, Star, RefreshCw, Info, Search, ArrowLeft } from "lucide-react";
 
 interface HeroItem {
   id: number;
@@ -324,6 +324,49 @@ export default function HomePage() {
       <Section title="⭐ أعلى تقييماً (أفلام)" fetcher={() => getTopRatedMovies(1)} type="movie" />
       <Section title="⭐ أعلى تقييماً (مسلسلات)" fetcher={() => getTopRatedTvShows(1)} type="tv" />
       <Section title="🔜 قادم قريباً" fetcher={() => getUpcomingMovies(1)} type="movie" />
+
+      {/* Genre Grid */}
+      <section className="mb-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-black tracking-tight text-white">شاهد حسب النوع</h2>
+          <Link
+            to="/movies"
+            className="flex items-center gap-1 text-sm text-rose-400 hover:text-rose-300 transition font-medium"
+          >
+            <span>عرض الكل</span>
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
+          {[
+            { slug: "action", name: "أكشن" },
+            { slug: "drama", name: "دراما" },
+            { slug: "horror", name: "رعب" },
+            { slug: "animation", name: "أنمي" },
+            { slug: "scifi", name: "خيال علمي" },
+            { slug: "comedy", name: "كوميدي" },
+            { slug: "adventure", name: "مغامرة" },
+            { slug: "crime", name: "جريمة" },
+            { slug: "documentary", name: "وثائقي" },
+            { slug: "family", name: "عائلي" },
+            { slug: "mystery", name: "غموض" },
+            { slug: "war", name: "حرب" },
+          ].map((genre) => (
+            <Link
+              key={genre.slug}
+              to={`/genre/${genre.slug}?type=movie`}
+              className="group relative flex items-center justify-between gap-2 p-4 rounded-2xl bg-gray-800/40 border border-gray-700/30 hover:border-rose-500/30 hover:bg-gray-800/70 transition-all duration-300 active:scale-[0.97]"
+            >
+              <span className="text-sm font-bold text-gray-200 group-hover:text-white transition-colors">
+                {genre.name}
+              </span>
+              <div className="w-8 h-8 rounded-full bg-rose-600/20 flex items-center justify-center shrink-0 group-hover:bg-rose-600/40 transition-colors">
+                <Play className="w-3.5 h-3.5 text-rose-400 fill-rose-400 mr-0.5" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
       </>)}
     </div>
   );
