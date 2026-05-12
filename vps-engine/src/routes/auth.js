@@ -4,14 +4,16 @@ import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || "cinemora-jwt-secret-2024";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "saadshaban1995@gmail.com";
+const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const BASE_URL = process.env.BASE_URL || "http://localhost:5555";
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://cinemora-theta.vercel.app";
+
+if (!JWT_SECRET) throw new Error("JWT_SECRET env var is not set");
+if (!ADMIN_EMAIL) throw new Error("ADMIN_EMAIL env var is not set");
 
 function generateToken(user) {
   return jwt.sign(

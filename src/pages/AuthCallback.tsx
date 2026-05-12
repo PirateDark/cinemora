@@ -45,11 +45,6 @@ export default function AuthCallback() {
     const error = params.get("error");
     const code = params.get("code");
 
-    console.log("AuthCallback URL:", window.location.href);
-    console.log("AuthCallback Token:", token);
-    console.log("AuthCallback Error:", error);
-    console.log("AuthCallback Code:", code);
-
     if (error) {
       setStatus(`error: ${error}`);
       setTimeout(() => { window.location.href = `/login?error=${encodeURIComponent(error)}`; }, 2000);
@@ -67,7 +62,6 @@ export default function AuthCallback() {
         vpsUrl = `${engineUrl}/api/auth/discord/callback?code=${encodeURIComponent(code)}`;
       }
 
-      console.log("AuthCallback: redirecting to VPS:", vpsUrl);
       window.location.href = vpsUrl;
       return;
     }

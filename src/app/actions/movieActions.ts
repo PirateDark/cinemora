@@ -5,7 +5,8 @@ export async function addMovieByTMDB(tmdbId: string) {
   try {
     await connectDB();
 
-    const apiKey = "ff54d7a5fdc2ab56530491ac8d378131";
+    const apiKey = process.env.TMDB_API_KEY;
+    if (!apiKey) throw new Error("TMDB_API_KEY env var is not set");
     const response = await fetch(
       `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}&language=ar-SA`
     );

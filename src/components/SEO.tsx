@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 
 const BASE = "سينمورا";
-const BASE_URL = "https://cinemora-theta.vercel.app";
+const BASE_URL = typeof window !== "undefined" ? window.location.origin : "https://cinemora-theta.vercel.app";
 
 interface SEOProps {
   title: string;

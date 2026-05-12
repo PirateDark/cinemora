@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "cinemora-jwt-secret-2024";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error("JWT_SECRET env var is not set");
 
 export function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;

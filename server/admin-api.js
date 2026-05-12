@@ -4,7 +4,8 @@ import { connectDB } from "../lib/db.js";
 import { Movie } from "../lib/models/Movie.js";
 
 const router = express.Router();
-const ADMIN_KEY = process.env.ADMIN_KEY || "admin123";
+const ADMIN_KEY = process.env.ADMIN_KEY;
+if (!ADMIN_KEY) throw new Error("ADMIN_KEY env var is not set");
 
 router.use(cors());
 router.use(express.json());
@@ -34,7 +35,8 @@ router.post("/movies/add", requireAuth, async (req, res) => {
     }
 
     await connectDB();
-    const apiKey = process.env.TMDB_API_KEY || "ff54d7a5fdc2ab56530491ac8d378131";
+    const apiKey = process.env.TMDB_API_KEY;
+    if (!apiKey) throw new Error("TMDB_API_KEY env var is not set");
     const response = await fetch(
       `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}&language=ar-SA`
     );

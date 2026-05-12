@@ -18,7 +18,7 @@ export default function AnimeCard({ anime, type }: Props) {
         <img
           src={imageUrl}
           alt={title}
-          className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-48 sm:h-56 md:h-64 object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
           onError={(e) => {
             (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x450?text=No+Image";
@@ -29,13 +29,13 @@ export default function AnimeCard({ anime, type }: Props) {
             {type === "movie" ? "فيلم" : "مسلسل"}
           </span>
         </div>
-        <div className="p-3">
-          <h3 className="font-bold text-sm line-clamp-1 text-left text-gray-100" dir="ltr">{title}</h3>
+        <div className="p-3 min-h-[80px] flex flex-col justify-between">
+          <h3 className="font-bold text-sm leading-snug line-clamp-2 text-left text-gray-100" dir="ltr">{title}</h3>
           <div className="flex justify-between items-center mt-2">
             <span className="text-yellow-400 text-sm flex items-center gap-1">
-              <Star className="w-3 h-3 fill-yellow-400" /> {score}
+              <Star className="w-3.5 h-3.5 fill-yellow-400" /> {score}
             </span>
-            <span className="text-xs text-gray-500 font-medium">
+            <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
               {type === "movie"
                 ? (anime.duration ? `${anime.duration} دقيقة` : anime.format)
                 : `${anime.episodes || "?"} حلقة`}

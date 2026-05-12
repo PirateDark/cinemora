@@ -198,7 +198,7 @@ export default function WatchPage() {
         description={mediaDetails?.overview ? `شاهد ${mediaDetails.title} - ${mediaDetails.overview.slice(0, 160)}` : undefined}
         keywords={`${mediaDetails?.title || ""}, ${isMovie ? "فيلم" : "مسلسل"}, مشاهدة, اونلاين, ${(mediaDetails?.genres || []).join(", ")}`}
         image={mediaDetails?.poster ? mediaDetails.poster.replace("w200", "w500") : undefined}
-        url={`https://cinemora-theta.vercel.app/watch/${type}/${id}${!isMovie ? `/${selectedSeason}/${selectedEpisode}` : ""}`}
+        url={`${window.location.origin}/watch/${type}/${id}${!isMovie ? `/${selectedSeason}/${selectedEpisode}` : ""}`}
         type={isMovie ? "video.movie" : "video.tv_show"}
       />
 
