@@ -56,9 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchUser]);
 
-  const handleToken = (token: string) => {
+  const handleToken = async (token: string) => {
     localStorage.setItem("token", token);
-    fetchUser(token);
+    return fetchUser(token);
   };
 
   const login = async (email: string, password: string) => {
