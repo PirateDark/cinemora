@@ -12,17 +12,20 @@ export default function ProtectedRoute({
 }) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const hasToken = typeof window !== "undefined" && localStorage.getItem("token");
 
   useEffect(() => {
     if (loading) return;
+    if (hasToken && !user) return;
     if (!user) {
       navigate("/login", { replace: true });
     } else if (requiredRole === "admin" && user.role !== "admin") {
       navigate("/", { replace: true });
     }
-  }, [user, loading, navigate, requiredRole]);
+  }, [user, loading, navigate, requiredRole, hasToken]);
 
   if (loading) return <LoadingSpinner />;
+  if (hasToken && !user) return <LoadingSpinner />;
   if (!user) return null;
   if (requiredRole === "admin" && user.role !== "admin") return null;
 
