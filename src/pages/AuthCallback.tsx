@@ -1,44 +1,94 @@
-import { useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+
+function extractToken(): string | null {
+  const href = window.location.href;
+  const search = window.location.search;
+  const hash = window.location.hash;
+
+  const params = new URLSearchParams(search);
+  const fromSearch =
+    params.get("token") ||
+    params.get("access_token") ||
+    params.get("id_token");
+
+  if (fromSearch) return fromSearch;
+
+  const fromHashToken = hash.match(/[#&]token=([^&]+)/);
+  if (fromHashToken) return fromHashToken[1];
+
+  const fromHashAccess = hash.match(/[#&]access_token=([^&]+)/);
+  if (fromHashAccess) return fromHashAccess[1];
+
+  const fromHashId = hash.match(/[#&]id_token=([^&]+)/);
+  if (fromHashId) return fromHashId[1];
+
+  const allParams = href.split("?")[1]?.split("&") || [];
+  for (const p of allParams) {
+    const [k, v] = p.split("=");
+    if (k === "token" || k === "access_token" || k === "id_token") {
+      return decodeURIComponent(v);
+    }
+  }
+
+  return null;
+}
 
 export default function AuthCallback() {
-  const [searchParams] = useSearchParams();
   const { handleToken } = useAuth();
-  const calledRef = useRef(false);
+  const [status, setStatus] = useState("processing");
 
   useEffect(() => {
-    if (calledRef.current) return;
-    calledRef.current = true;
+    const token = extractToken();
+    const error = new URLSearchParams(window.location.search).get("error");
 
-    const token =
-      searchParams.get("token") ||
-      searchParams.get("access_token") ||
-      window.location.hash.split("token=")[1]?.split("&")[0];
-
-    const error = searchParams.get("error");
+    console.log("AuthCallback URL:", window.location.href);
+    console.log("AuthCallback Token:", token);
+    console.log("AuthCallback Error:", error);
 
     if (error) {
-      window.location.href = `/login?error=${encodeURIComponent(error)}`;
+      setStatus(`error: ${error}`);
+      setTimeout(() => { window.location.href = `/login?error=${encodeURIComponent(error)}`; }, 2000);
       return;
     }
 
     if (!token) {
-      window.location.href = "/login?error=no_token";
+      setStatus("no_token");
+      setTimeout(() => { window.location.href = "/login?error=no_token"; }, 3000);
       return;
     }
 
+    setStatus("saving");
     localStorage.setItem("token", token);
     handleToken(token);
     window.location.href = "/";
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-      <div className="text-center">
-        <Loader2 className="w-10 h-10 text-rose-500 animate-spin mx-auto mb-4" />
-        <p className="text-gray-400 text-sm">جاري تسجيل الدخول...</p>
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4" dir="rtl">
+      <div className="text-center max-w-lg">
+        {status === "processing" && (
+          <>
+            <Loader2 className="w-10 h-10 text-rose-500 animate-spin mx-auto mb-4" />
+            <p className="text-gray-400 text-sm">جاري تسجيل الدخول...</p>
+          </>
+        )}
+        {status === "no_token" && (
+          <>
+            <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-4" />
+            <p className="text-gray-300 font-bold mb-2">لم يتم العثور على رمز الدخول</p>
+            <p className="text-gray-500 text-xs mb-4 break-all ltr">{window.location.href}</p>
+            <p className="text-gray-600 text-xs">سيتم إعادة التوجيه إلى صفحة تسجيل الدخول...</p>
+          </>
+        )}
+        {status.startsWith("error:") && (
+          <>
+            <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-4" />
+            <p className="text-gray-300 font-bold mb-2">حدث خطأ في تسجيل الدخول</p>
+            <p className="text-gray-500 text-xs">{status.replace("error: ", "")}</p>
+          </>
+        )}
       </div>
     </div>
   );
