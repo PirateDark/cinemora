@@ -40,16 +40,35 @@ export default function AuthCallback() {
   const [status, setStatus] = useState("processing");
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
     const token = extractToken();
-    const error = new URLSearchParams(window.location.search).get("error");
+    const error = params.get("error");
+    const code = params.get("code");
 
     console.log("AuthCallback URL:", window.location.href);
     console.log("AuthCallback Token:", token);
     console.log("AuthCallback Error:", error);
+    console.log("AuthCallback Code:", code);
 
     if (error) {
       setStatus(`error: ${error}`);
       setTimeout(() => { window.location.href = `/login?error=${encodeURIComponent(error)}`; }, 2000);
+      return;
+    }
+
+    if (code) {
+      const path = window.location.pathname;
+      const engineUrl = import.meta.env.VITE_ENGINE_URL || "http://51.254.207.214:5555";
+      let vpsUrl = "";
+
+      if (path === "/auth/callback/google") {
+        vpsUrl = `${engineUrl}/api/auth/google/callback?code=${encodeURIComponent(code)}`;
+      } else if (path === "/auth/callback/discord") {
+        vpsUrl = `${engineUrl}/api/auth/discord/callback?code=${encodeURIComponent(code)}`;
+      }
+
+      console.log("AuthCallback: redirecting to VPS:", vpsUrl);
+      window.location.href = vpsUrl;
       return;
     }
 

@@ -6,6 +6,7 @@ import scraperRoutes from "./routes/scraper.js";
 import adminRoutes from "./routes/admin.js";
 
 const app = express();
+app.set("trust proxy", true);
 const PORT = process.env.PORT || 5555;
 
 app.use(cors({

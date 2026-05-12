@@ -87,8 +87,8 @@ function App() {
 
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/auth/google/callback" element={<AuthCallback />} />
-            <Route path="/auth/discord/callback" element={<AuthCallback />} />
+            <Route path="/auth/callback/google" element={<AuthCallback />} />
+            <Route path="/auth/callback/discord" element={<AuthCallback />} />
             <Route
               path="/admin"
               element={
