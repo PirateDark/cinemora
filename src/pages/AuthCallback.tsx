@@ -25,6 +25,7 @@ export default function AuthCallback() {
 
     calledRef.current = true;
 
+    console.log("AuthCallback: Token found, saving to localStorage and redirecting");
     localStorage.setItem("token", token);
     handleToken(token);
 

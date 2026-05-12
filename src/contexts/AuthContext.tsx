@@ -30,19 +30,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchUser = useCallback(async (token: string) => {
+    console.log("AuthContext: Token found:", !!token);
     try {
       const res = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status === 401) {
+        console.log("AuthContext: 401 Unauthorized, removing token");
+        localStorage.removeItem("token");
+        return false;
+      }
       const data = await res.json();
+      console.log("AuthContext: User fetched:", data.success, data.user);
       if (data.success) {
         setUser(data.user);
         return true;
       }
-      localStorage.removeItem("token");
       return false;
     } catch {
-      localStorage.removeItem("token");
+      console.log("AuthContext: Network error fetching user, keeping token for retry");
       return false;
     }
   }, []);
