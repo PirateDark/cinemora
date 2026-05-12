@@ -23,7 +23,6 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const ENGINE_URL = import.meta.env.VITE_ENGINE_URL || "http://51.254.207.214:5555";
 const API_URL = `${ENGINE_URL}/api`;
-const AUTH_URL = ENGINE_URL;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -111,11 +110,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const googleLogin = () => {
-    window.location.href = `${AUTH_URL}/auth/google`;
+    window.location.href = `${API_URL}/auth/google`;
   };
 
   const discordLogin = () => {
-    window.location.href = `${AUTH_URL}/auth/discord`;
+    window.location.href = `${API_URL}/auth/discord`;
   };
 
   return (
