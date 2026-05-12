@@ -37,10 +37,20 @@ export default function Header() {
   const location = useLocation();
   const { settings, toggleEnabled } = useFamilyMode();
   const { user, logout } = useAuth();
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const [token, setToken] = useState<string | null>(
+    typeof window !== "undefined" ? localStorage.getItem("token") : null
+  );
   const userMenuRef = useRef<HTMLDivElement>(null);
   const [canInstall, setCanInstall] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+
+  useEffect(() => {
+    const onStorage = () => setToken(localStorage.getItem("token"));
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const hasToken = !!token || !!user;
 
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).__pwaInstallEvent) {
@@ -135,7 +145,7 @@ export default function Header() {
         {/* Left - User Actions: Login, FamilyMode, Search (left to right) */}
         <div className="hidden md:flex items-center gap-4">
           {/* Login / User Menu */}
-          {token ? (
+          {hasToken ? (
             <div ref={userMenuRef} className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
@@ -292,7 +302,7 @@ export default function Header() {
               <span>{settings.enabled ? "الوضع العائلي: مفعل" : "الوضع العائلي"}</span>
             </button>
 
-            {token ? (
+            {hasToken ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700/30">
                   <div className="w-[38px] h-[38px] rounded-full overflow-hidden ring-2 ring-gray-700 shrink-0">
