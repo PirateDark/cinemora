@@ -9,16 +9,30 @@ export default function AuthCallback() {
   const calledRef = useRef(false);
 
   useEffect(() => {
+    console.log("AuthCallback: Full URL:", window.location.href);
+    console.log("AuthCallback: Search Params:", window.location.search);
+    console.log("AuthCallback: Hash:", window.location.hash);
+
     if (calledRef.current) return;
-    const token = searchParams.get("token");
+
+    const token =
+      searchParams.get("token") ||
+      searchParams.get("access_token") ||
+      searchParams.get("id_token") ||
+      window.location.hash.match(/[#&]token(=|&)([^&]+)/)?.[2] ||
+      window.location.hash.match(/[#&]access_token(=|&)([^&]+)/)?.[2] ||
+      window.location.hash.match(/[#&]id_token(=|&)([^&]+)/)?.[2];
+
     const error = searchParams.get("error");
 
     if (error) {
+      console.log("AuthCallback: Error from OAuth:", error);
       window.location.href = `/login?error=${encodeURIComponent(error)}`;
       return;
     }
 
     if (!token) {
+      console.log("AuthCallback: No token found in URL or hash");
       window.location.href = "/login?error=no_token";
       return;
     }
