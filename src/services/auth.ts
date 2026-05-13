@@ -16,3 +16,19 @@ export function logout(): void {
   removeToken();
   window.location.href = "/";
 }
+
+function decodePayload(token: string): Record<string, unknown> | null {
+  try {
+    const payload = token.split(".")[1];
+    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+  } catch {
+    return null;
+  }
+}
+
+export function isAdmin(): boolean {
+  const token = getToken();
+  if (!token) return false;
+  const payload = decodePayload(token);
+  return payload?.role?.toString()?.toLowerCase() === "admin";
+}

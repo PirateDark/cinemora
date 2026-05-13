@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Shield, Bookmark, Heart, LogOut } from "lucide-react";
-import { logout as authLogout } from "../services/auth";
+import { logout as authLogout, isAdmin } from "../services/auth";
 
 interface UserMenuUser {
   id: string;
@@ -16,6 +16,7 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ user, onClose }: UserMenuProps) {
+  const isUserAdmin = user?.role?.toLowerCase() === "admin" || isAdmin();
   return (
     <div
       className="absolute top-full left-0 mt-2 w-56 overflow-hidden animate-fadeIn"
@@ -33,7 +34,7 @@ export default function UserMenu({ user, onClose }: UserMenuProps) {
       </div>
 
       <div className="py-1">
-        {user?.role?.toLowerCase() === "admin" && (
+        {isUserAdmin && (
           <Link
             to="/admin"
             onClick={onClose}
