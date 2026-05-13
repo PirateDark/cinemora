@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { setToken } from "../services/auth";
 import { Loader2, AlertCircle } from "lucide-react";
 
 function extractToken(): string | null {
@@ -53,7 +54,7 @@ export default function AuthCallback() {
 
     if (code) {
       const path = window.location.pathname;
-      const engineUrl = import.meta.env.VITE_ENGINE_URL || "http://51.254.207.214:5555";
+      const engineUrl = import.meta.env.VITE_ENGINE_URL || "https://api.cinemoratv.online";
       let vpsUrl = "";
 
       if (path === "/auth/callback/google") {
@@ -73,7 +74,7 @@ export default function AuthCallback() {
     }
 
     setStatus("saving");
-    localStorage.setItem("token", token);
+    setToken(token);
     handleToken(token);
     window.location.href = "/";
   }, []);

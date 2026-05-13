@@ -16,7 +16,7 @@ export const tmdbClient = axios.create({
 });
 
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_ENGINE_URL || "",
+  baseURL: import.meta.env.VITE_ENGINE_URL || "https://api.cinemoratv.online",
 });
 
 apiClient.interceptors.request.use((config) => {

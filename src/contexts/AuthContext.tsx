@@ -21,7 +21,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const ENGINE_URL = import.meta.env.VITE_ENGINE_URL || "http://51.254.207.214:5555";
+const ENGINE_URL = import.meta.env.VITE_ENGINE_URL || "https://api.cinemoratv.online";
 const API_URL = `${ENGINE_URL}/api`;
 
 export function AuthProvider({ children }: { children: ReactNode }) {

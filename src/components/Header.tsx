@@ -5,6 +5,7 @@ import { useFamilyMode } from "../hooks/useFamilyMode";
 import NavDropdown from "./NavDropdown";
 import MobileNavItem from "./MobileNavItem";
 import { useAuth } from "../contexts/AuthContext";
+import UserMenu from "./UserMenu";
 
 const dropdownItems = {
   tv: [
@@ -164,49 +165,7 @@ export default function Header() {
               </button>
 
               {showUserMenu && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-gray-900/98 backdrop-blur-xl border border-gray-700/50 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-fadeIn">
-                  <div className="px-4 py-3 border-b border-gray-800/50">
-                    <p className="text-white text-sm font-medium truncate">{user?.name || "المستخدم"}</p>
-                    <p className="text-gray-500 text-xs truncate">{user?.email || ""}</p>
-                  </div>
-                  <div className="py-1">
-                    {user?.role === "admin" && (
-                      <Link
-                        to="/admin"
-                        onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800/80 transition-colors"
-                      >
-                        <Shield className="w-4 h-4 text-rose-400" />
-                        لوحة التحكم
-                      </Link>
-                    )}
-                    <Link
-                      to="/watchlist"
-                      onClick={() => setShowUserMenu(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800/80 transition-colors"
-                    >
-                      <Bookmark className="w-4 h-4 text-amber-400" />
-                      قائمة المشاهدة
-                    </Link>
-                    <Link
-                      to="/favorites"
-                      onClick={() => setShowUserMenu(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800/80 transition-colors"
-                    >
-                      <Heart className="w-4 h-4 text-red-400" />
-                      المفضلة
-                    </Link>
-                  </div>
-                  <div className="border-t border-gray-800/50 py-1">
-                    <button
-                      onClick={() => { logout(); setShowUserMenu(false); navigate("/"); }}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-600/10 transition-colors w-full text-right"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      تسجيل الخروج
-                    </button>
-                  </div>
-                </div>
+                <UserMenu user={user} onClose={() => setShowUserMenu(false)} />
               )}
             </div>
           ) : (
