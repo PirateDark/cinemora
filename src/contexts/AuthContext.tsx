@@ -16,7 +16,7 @@ function decodeToken(token: string): User | null {
       id: json.id || "",
       email: json.email || "",
       name: json.name || "",
-      role: json.role === "admin" ? "admin" : "user",
+      role: json.role?.toLowerCase() === "admin" ? "admin" : "user",
     };
   } catch {
     return null;

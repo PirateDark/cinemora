@@ -33,7 +33,7 @@ export default function UserMenu({ user, onClose }: UserMenuProps) {
       </div>
 
       <div className="py-1">
-        {(user?.role === "admin") && (
+        {user?.role?.toLowerCase() === "admin" && (
           <Link
             to="/admin"
             onClick={onClose}
