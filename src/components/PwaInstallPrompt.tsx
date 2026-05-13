@@ -15,32 +15,46 @@ export default function PwaInstallPrompt() {
   const [showFallbackTip, setShowFallbackTip] = useState(false);
   const dismissedRef = useRef(false);
   const installedRef = useRef(isStandalone());
+  const deferredRef = useRef<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    if (installedRef.current) return;
+    if (installedRef.current) {
+      console.log("📱 PWA: Already installed (standalone mode)");
+      return;
+    }
+
+    console.log("📱 PWA: Checking browser support...");
 
     const handler = (e: Event) => {
       e.preventDefault();
       const promptEvent = e as BeforeInstallPromptEvent;
       setDeferredPrompt(promptEvent);
+      deferredRef.current = promptEvent;
       (window as any).__pwaInstallEvent = promptEvent;
+      console.log("📱 PWA: beforeinstallprompt event captured — browser supports install");
     };
 
     window.addEventListener("beforeinstallprompt", handler);
     window.addEventListener("appinstalled", () => {
       installedRef.current = true;
       setVisible(false);
+      console.log("📱 PWA: App installed successfully");
     });
 
-    const timer = setTimeout(() => {
+    const showTimer = setTimeout(() => {
       if (!installedRef.current && !dismissedRef.current) {
+        if (deferredRef.current) {
+          console.log("📱 PWA: Showing install button (event available)");
+        } else {
+          console.log("📱 PWA: No beforeinstallprompt event — showing fallback button");
+        }
         setVisible(true);
       }
     }, 3000);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
-      clearTimeout(timer);
+      clearTimeout(showTimer);
     };
   }, []);
 
