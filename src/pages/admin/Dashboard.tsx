@@ -6,10 +6,10 @@ const API = "https://api.cinemoratv.online/api/admin";
 
 interface Draft {
   id: string;
-  tmdbId: string;
+  url: string;
   title: string;
-  year?: string;
-  posterPath?: string;
+  poster?: string;
+  status: string;
   createdAt: string;
 }
 
@@ -203,9 +203,9 @@ export default function AdminDashboard() {
                 >
                   {/* Poster */}
                   <div className="aspect-[2/3] bg-gray-900 relative overflow-hidden">
-                    {draft.posterPath ? (
+                    {draft.poster ? (
                       <img
-                        src={draft.posterPath}
+                        src={draft.poster}
                         alt={draft.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
@@ -216,11 +216,6 @@ export default function AdminDashboard() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
-                    {draft.year && (
-                      <span className="absolute top-3 right-3 bg-rose-600/80 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-                        {draft.year}
-                      </span>
-                    )}
                   </div>
 
                   {/* Info */}

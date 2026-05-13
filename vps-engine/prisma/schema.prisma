@@ -132,3 +132,15 @@ model Favorite {
   @@unique([userId, mediaId])
   @@map("favorites")
 }
+
+model Draft {
+  id         String   @id @default(cuid())
+  url        String
+  title      String   @default("")
+  poster     String?
+  sourceData Json?    @map("source_data")
+  status     String   @default("pending") // pending | approved | rejected
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("drafts")
+}
