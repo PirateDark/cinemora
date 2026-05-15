@@ -74,6 +74,7 @@ export default function EpisodeSelector({
                   <img
                     src={`https://image.tmdb.org/t/p/w300${ep.still_path}`}
                     alt={ep.name || `الحلقة ${ep.episode_number}`}
+                    loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (

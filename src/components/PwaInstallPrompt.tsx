@@ -58,6 +58,12 @@ export default function PwaInstallPrompt() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!visible) return;
+    const autoHide = setTimeout(() => setVisible(false), 5000);
+    return () => clearTimeout(autoHide);
+  }, [visible]);
+
   const handleInstall = useCallback(() => {
     if (deferredPrompt) {
       deferredPrompt.prompt();

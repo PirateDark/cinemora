@@ -507,6 +507,51 @@ export const getTvByGenre = async (genreId: number, page: number = 1) => {
   return { results: res.data.results as TmdbTvShow[], total_pages: res.data.total_pages };
 };
 
+export const discoverContent = async (
+  type: "movie" | "tv",
+  params: {
+    year?: number;
+    minRating?: number;
+    language?: string;
+    sortBy?: string;
+    page?: number;
+  } = {},
+) => {
+  const { year, minRating, language, sortBy = "popularity.desc", page = 1 } = params;
+  const cacheKey = `discover_${type}_${year ?? "any"}_${minRating ?? "any"}_${language ?? "any"}_${sortBy}_${page}`;
+  const cached = getCache<{ results: TmdbMovie[] | TmdbTvShow[]; total_pages: number }>(cacheKey);
+  if (cached) return cached;
+
+  const discoverParams: Record<string, string | number> = {
+    api_key: TMDB_API_KEY,
+    sort_by: sortBy,
+    page,
+    language: "en",
+  };
+  if (year) {
+    if (type === "movie") discoverParams.primary_release_year = year;
+    else discoverParams.first_air_date_year = year;
+  }
+  if (minRating) discoverParams["vote_average.gte"] = minRating;
+  if (language) discoverParams.with_original_language = language;
+
+  const [enRes, arRes] = await Promise.all([
+    axios.get(`${TMDB_BASE_URL}/discover/${type}`, { params: { ...discoverParams } }),
+    axios.get(`${TMDB_BASE_URL}/discover/${type}`, {
+      params: { ...discoverParams, language: "ar" },
+    }),
+  ]);
+
+  const mergeFn = type === "movie" ? mergeMovieResults : mergeTvResults;
+  const result = {
+    results: mergeFn(enRes.data.results, arRes.data.results),
+    total_pages: enRes.data.total_pages,
+  };
+
+  setCache(cacheKey, result);
+  return result;
+};
+
 export const getSeasonDetails = async (tvId: number, seasonNumber: number) => {
   const [enRes, arRes] = await Promise.all([
     axios.get(`${TMDB_BASE_URL}/tv/${tvId}/season/${seasonNumber}`, {

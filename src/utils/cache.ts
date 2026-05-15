@@ -11,7 +11,7 @@ export function getCache<T>(key: string): T | null {
   return value as T;
 }
 
-export function setCache<T>(key: string, value: T, ttl = 3600000): void {
+export function setCache<T>(key: string, value: T, ttl = 86400000): void {
   localStorage.setItem(
     `cache_${key}`,
     JSON.stringify({ value, expiry: Date.now() + ttl }),

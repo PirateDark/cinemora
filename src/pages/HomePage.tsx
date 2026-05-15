@@ -11,11 +11,13 @@ import {
   TmdbTvShow,
 } from "../services/tmdbApi";
 import { useDebounce } from "../hooks/useDebounce";
+import { useFavorites } from "../hooks/useFavorites";
 import MediaCard from "../components/MediaCard";
 import MediaSkeleton from "../components/MediaSkeleton";
+import LazyImage from "../components/LazyImage";
 import SearchBar from "../components/SearchBar";
 import SEO from "../components/SEO";
-import { Play, ChevronLeft, ChevronRight, Star, RefreshCw, Info, Search, ArrowLeft } from "lucide-react";
+import { Play, ChevronLeft, ChevronRight, Star, RefreshCw, Search, ArrowLeft, Heart, Info } from "lucide-react";
 
 interface HeroItem {
   id: number;
@@ -30,124 +32,153 @@ interface HeroItem {
 }
 
 function HeroBanner({ items }: { items: HeroItem[] }) {
-  const [current, setCurrent] = useState(0);
-  const navigate = useNavigate();
-  const featured = items.slice(0, 5);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+  const featured = items.slice(0, 12);
 
-  const next = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % featured.length);
-  }, [featured.length]);
-
-  const prev = () => {
-    setCurrent((prev) => (prev - 1 + featured.length) % featured.length);
+  const scroll = (dir: "left" | "right") => {
+    if (!scrollRef.current) return;
+    const container = scrollRef.current;
+    const card = container.children[0] as HTMLElement;
+    if (!card) return;
+    const cardWidth = card.offsetWidth + 12;
+    const visible = Math.floor(container.clientWidth / cardWidth);
+    const scrollBy = cardWidth * Math.max(visible, 1);
+    container.scrollBy({
+      left: dir === "right" ? scrollBy : -scrollBy,
+      behavior: "smooth",
+    });
   };
-
-  useEffect(() => {
-    const timer = setInterval(next, 7000);
-    return () => clearInterval(timer);
-  }, [next]);
 
   if (featured.length === 0) return null;
 
-  const currentItem = featured[current];
-  const date = currentItem.release_date || currentItem.first_air_date;
-
   return (
-    <div className="relative w-full h-[50vh] min-h-[400px] md:h-[620px] rounded-3xl overflow-hidden mb-16 shadow-2xl group">
-      <img
-        key={currentItem.id}
-        src={`https://image.tmdb.org/t/p/w1280${currentItem.backdrop_path || currentItem.poster_path}`}
-        alt={currentItem.title}
-        loading="lazy"
-        className="w-full h-full object-cover transition-all duration-1000 scale-105 group-hover:scale-100"
-      />
-
-      <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-l from-gray-950/80 via-gray-950/20 to-transparent" />
-      <div className="absolute inset-0 bg-black/10" />
-
-      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-16">
-        <div className="max-w-3xl animate-fadeInUp">
-          <div className="flex items-center gap-2 mb-3 md:mb-4">
-            <div className="flex items-center gap-1 bg-rose-600/20 backdrop-blur-md border border-rose-500/30 px-2.5 py-0.5 rounded-full">
-              <Star className="w-3 h-3 fill-rose-500 text-rose-500" />
-              <span className="text-rose-400 font-bold text-xs">{currentItem.vote_average?.toFixed(1)}</span>
-            </div>
-            {date && (
-              <span className="text-gray-300 bg-gray-800/50 backdrop-blur-md px-2.5 py-0.5 rounded-full text-xs border border-gray-700/30">
-                {new Date(date).getFullYear()}
-              </span>
-            )}
-            <span className="text-gray-300 bg-gray-800/50 backdrop-blur-md px-2.5 py-0.5 rounded-full text-xs border border-gray-700/30">
-              {currentItem.media_type === "movie" ? "فيلم" : "مسلسل"}
-            </span>
-          </div>
-
-          <h2
-            className="text-2xl md:text-6xl font-black mb-2 md:mb-4 text-white drop-shadow-2xl text-left tracking-tight leading-tight"
-            dir="ltr"
+    <div className="relative mb-12 group/carousel">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl md:text-2xl font-black tracking-tight text-white">أبرز الأعمال</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={() => scroll("left")}
+            className="bg-gray-800/60 hover:bg-rose-600/80 text-white p-2 rounded-xl transition-all active:scale-90 border border-gray-700/30"
+            aria-label="السابق"
           >
-            {currentItem.title}
-          </h2>
-
-          {currentItem.overview && (
-            <p
-              className="text-gray-200 text-xs md:text-lg line-clamp-2 md:line-clamp-3 mb-4 md:mb-8 text-right leading-relaxed max-w-2xl ml-auto"
-              dir="rtl"
-            >
-              {currentItem.overview}
-            </p>
-          )}
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(`/${currentItem.media_type}/${currentItem.id}`)}
-              className="flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-bold md:font-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-rose-600/30"
-            >
-              <Play className="w-4 h-4 md:w-6 md:h-6 fill-white" />
-              <span className="text-sm md:text-base">مشاهدة الآن</span>
-            </button>
-            <button
-              onClick={() => navigate(`/${currentItem.media_type}/${currentItem.id}`)}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-5 py-2.5 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold md:font-bold transition-all border border-white/15 active:scale-95"
-            >
-              <Info className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="text-sm md:text-base">التفاصيل</span>
-            </button>
-          </div>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => scroll("right")}
+            className="bg-gray-800/60 hover:bg-rose-600/80 text-white p-2 rounded-xl transition-all active:scale-90 border border-gray-700/30"
+            aria-label="التالي"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      <div className="absolute top-1/2 -translate-y-1/2 left-2 right-2 md:left-4 md:right-4 flex justify-between items-center opacity-0 md:group-hover:opacity-100 transition-opacity duration-500">
+      <div className="relative">
+        <div
+          ref={scrollRef}
+          className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
+        >
+          {featured.map((item) => {
+            const isMovie = item.media_type === "movie";
+            const linkTo = `/${isMovie ? "movie" : "tv"}/${item.id}`;
+            const posterUrl = item.poster_path
+              ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+              : "https://via.placeholder.com/300x450?text=No+Image";
+            return (
+              <div
+                key={item.id}
+                className="flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 xl:w-1/6 group/card relative rounded-xl overflow-hidden bg-gray-900 border border-gray-800/50 hover:border-rose-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-rose-500/10"
+              >
+                <Link to={linkTo} className="block">
+                <div className="aspect-[2/3]">
+                  <LazyImage
+                    src={posterUrl}
+                    alt={item.title}
+                    className="w-full h-full transition-transform duration-500 group-hover/card:scale-110"
+                  />
+                </div>
+                </Link>
+
+                {/* Hover overlay with buttons */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex flex-col justify-center items-center gap-3 p-4">
+                  <Link
+                    to={linkTo}
+                    className="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2.5 rounded-lg transition-all shadow-lg shadow-rose-600/30 active:scale-95"
+                  >
+                    <Info className="w-3.5 h-3.5" />
+                    التفاصيل
+                  </Link>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const favItem = {
+                        id: item.id,
+                        mal_id: item.id,
+                        title: item.title,
+                        name: item.title,
+                        poster_path: item.poster_path || "",
+                        vote_average: item.vote_average || 0,
+                        overview: item.overview,
+                        release_date: item.release_date || item.first_air_date || "",
+                        genre_ids: [] as number[],
+                        type: isMovie ? "movie" : ("tv" as "movie" | "tv"),
+                        score: item.vote_average || 0,
+                        images: {
+                          jpg: { image_url: posterUrl, large_image_url: posterUrl },
+                        },
+                      };
+                      if (isFavorite(item.id)) removeFavorite(item.id);
+                      else addFavorite(favItem);
+                    }}
+                    className={`w-full flex items-center justify-center gap-2 text-xs font-bold py-2.5 rounded-lg transition-all active:scale-95 border ${
+                      isFavorite(item.id)
+                        ? "bg-rose-600/20 border-rose-500/40 text-rose-400"
+                        : "bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                    }`}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${isFavorite(item.id) ? "fill-rose-500" : ""}`} />
+                    {isFavorite(item.id) ? "إزالة من المفضلة" : "أضف للمفضلة"}
+                  </button>
+                </div>
+
+                {/* Always visible: title + rating at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 p-2.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
+                  <p className="text-white font-bold text-xs line-clamp-1 text-right leading-relaxed mb-1">
+                    {item.title}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                      <span className="text-yellow-400 text-[10px] font-bold">{item.vote_average?.toFixed(1)}</span>
+                    </div>
+                    <span className="text-gray-400 text-[10px]">{isMovie ? "فيلم" : "مسلسل"}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         <button
-          onClick={prev}
-          className="bg-black/40 hover:bg-rose-600/80 backdrop-blur-xl text-white p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border border-white/10 active:scale-90"
+          onClick={() => scroll("right")}
+          className="absolute left-0 top-0 bottom-2 w-12 bg-gradient-to-r from-[#0a0a0a]/80 to-transparent opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 flex items-center justify-start pr-1 z-10"
+          aria-label="التالى"
+        >
+          <div className="bg-black/50 hover:bg-rose-600/80 backdrop-blur-sm text-white p-2 rounded-xl transition-all border border-white/10">
+            <ChevronLeft className="w-5 h-5" />
+          </div>
+        </button>
+        <button
+          onClick={() => scroll("left")}
+          className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-[#0a0a0a]/80 to-transparent opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 flex items-center justify-end pl-1 z-10"
           aria-label="السابق"
         >
-          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+          <div className="bg-black/50 hover:bg-rose-600/80 backdrop-blur-sm text-white p-2 rounded-xl transition-all border border-white/10">
+            <ChevronRight className="w-5 h-5" />
+          </div>
         </button>
-        <button
-          onClick={next}
-          className="bg-black/40 hover:bg-rose-600/80 backdrop-blur-xl text-white p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border border-white/10 active:scale-90"
-          aria-label="التالي"
-        >
-          <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
-      </div>
-
-      <div className="absolute bottom-4 md:bottom-8 right-4 md:right-16 flex gap-1.5 md:gap-2">
-        {featured.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            className={`rounded-full transition-all duration-500 active:scale-90 ${
-              i === current
-                ? "w-6 md:w-8 h-1.5 md:h-1.5 bg-rose-600 shadow-lg shadow-rose-600/50"
-                : "w-1.5 md:w-1.5 h-1.5 md:h-1.5 bg-white/50 hover:bg-white/80"
-            }`}
-            aria-label={` slide ${i + 1}`}
-          />
-        ))}
       </div>
     </div>
   );
@@ -314,7 +345,7 @@ export default function HomePage() {
 
       {!searchQuery.trim() && (<>
       {heroLoading ? (
-        <div className="w-full h-[460px] md:h-[620px] rounded-3xl bg-gray-800/50 animate-pulse mb-16 shimmer" />
+        <div className="w-full h-[260px] rounded-2xl bg-gray-800/50 animate-pulse mb-12 shimmer" />
       ) : (
         <HeroBanner items={heroItems} />
       )}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { setToken } from "../services/auth";
 import { Loader2, AlertCircle } from "lucide-react";
+import SEO from "../components/SEO";
 
 function extractToken(): string | null {
   const href = window.location.href;
@@ -80,7 +81,9 @@ export default function AuthCallback() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4" dir="rtl">
+    <>
+      <SEO title="تسجيل الدخول" />
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4" dir="rtl">
       <div className="text-center max-w-lg">
         {status === "processing" && (
           <>
@@ -105,5 +108,6 @@ export default function AuthCallback() {
         )}
       </div>
     </div>
+    </>
   );
 }

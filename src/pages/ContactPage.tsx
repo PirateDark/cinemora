@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Send, CheckCircle } from "lucide-react";
 import { useToast } from "../components/Toast";
+import SEO from "../components/SEO";
 
 export default function ContactPage() {
   const { toast } = useToast();
@@ -39,6 +40,7 @@ export default function ContactPage() {
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
+      <SEO title="اتصل بنا" description="تواصل مع فريق سينمورا - استفسارات، اقتراحات، وشكاوى" />
       <h1 className="text-3xl font-bold mb-2 text-center">اتصل بنا</h1>
       <p className="text-gray-400 text-center mb-8">
         نحن هنا للإجابة على استفساراتك واقتراحاتك

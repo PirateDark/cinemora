@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Info, Star, Calendar } from "lucide-react";
+import LazyImage from "./LazyImage";
 
 interface MediaInfoProps {
   poster: string;
@@ -18,10 +19,10 @@ export default function MediaInfo({ poster, title, year, rating, genres, overvie
       <div className="flex gap-4">
         {poster && (
           <div className="relative shrink-0">
-            <img
+            <LazyImage
               src={poster}
               alt={title}
-              className="w-20 h-28 object-cover rounded-xl shadow-lg ring-1 ring-gray-700/50"
+              className="w-20 h-28 rounded-xl shadow-lg ring-1 ring-gray-700/50"
             />
           </div>
         )}

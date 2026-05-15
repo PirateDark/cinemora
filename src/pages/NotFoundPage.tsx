@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { Home, Search } from "lucide-react";
+import SEO from "../components/SEO";
 
 export default function NotFoundPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+      <SEO title="404 - الصفحة غير موجودة" description="عذراً، الصفحة التي تبحث عنها غير موجودة" />
       <h1 className="text-8xl font-extrabold text-rose-500 mb-4">404</h1>
       <h2 className="text-2xl font-bold text-white mb-2">الصفحة غير موجودة</h2>
       <p className="text-gray-400 mb-8 max-w-md">

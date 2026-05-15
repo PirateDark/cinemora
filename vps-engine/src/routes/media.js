@@ -299,4 +299,17 @@ router.get("/watchlist", authenticate, async (req, res) => {
   }
 });
 
+router.get("/favorites/count/:tmdbId", async (req, res) => {
+  try {
+    const { tmdbId } = req.params;
+    const media = await prisma.media.findUnique({ where: { tmdbId } });
+    if (!media) return res.json({ success: true, count: 0 });
+    const count = await prisma.favorite.count({ where: { mediaId: media.id } });
+    res.json({ success: true, count });
+  } catch (error) {
+    console.error("Favorites count error:", error);
+    res.status(500).json({ success: false, error: "فشل في جلب عدد المفضلة" });
+  }
+});
+
 export default router;

@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Home, Heart, Bookmark, Users, ShieldCheck, Shield, Download, LogIn, LogOut, User, ChevronDown, Crown } from "lucide-react";
+import { Menu, X, Home, Heart, Bookmark, Compass, Users, ShieldCheck, Shield, Download, LogIn, LogOut, User, ChevronDown, Crown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useFamilyMode } from "../hooks/useFamilyMode";
 import NavDropdown from "./NavDropdown";
@@ -29,6 +29,7 @@ const dropdownItems = {
 const navLinks = [
   { name: "المفضلة", path: "/favorites", icon: Heart },
   { name: "قائمة المشاهدة", path: "/watchlist", icon: Bookmark },
+  { name: "اكتشف", path: "/discover", icon: Compass },
 ];
 
 export default function Header() {
@@ -154,7 +155,7 @@ export default function Header() {
               >
                 <div className="w-[35px] h-[35px] rounded-full overflow-hidden border-2 border-[#ff0055] shadow-[0_0_10px_rgba(255,0,85,0.5)] transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(255,0,85,0.7)]">
                   {user?.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    <img src={user.avatar} alt={user.name} loading="lazy" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-gray-700 flex items-center justify-center">
                       <User className="w-4 h-4 text-gray-400" />
@@ -266,7 +267,7 @@ export default function Header() {
                 <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700/30">
                   <div className="w-[38px] h-[38px] rounded-full overflow-hidden ring-2 ring-gray-700 shrink-0">
                     {user?.avatar ? (
-                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                      <img src={user.avatar} alt={user.name} loading="lazy" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-gray-700 flex items-center justify-center">
                         <User className="w-4 h-4 text-gray-400" />

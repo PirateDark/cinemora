@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Trash2, Clock } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { fetchWatchHistory } from "../services/vpsApi";
+import LazyImage from "../components/LazyImage";
+import SEO from "../components/SEO";
 
 interface HistoryItem {
   id: number;
@@ -65,16 +67,20 @@ export default function WatchHistoryPage() {
 
   if (history.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-        <Clock className="w-16 h-16 mb-4 opacity-40" />
-        <h2 className="text-xl font-semibold mb-2">لا يوجد سجل مشاهدة</h2>
-        <p className="text-sm">ستظهر هنا المحتويات التي شاهدتها مؤخراً</p>
-      </div>
+      <>
+        <SEO title="سجل المشاهدة" />
+        <div className="flex flex-col items-center justify-center py-24 text-gray-400">
+          <Clock className="w-16 h-16 mb-4 opacity-40" />
+          <h2 className="text-xl font-semibold mb-2">لا يوجد سجل مشاهدة</h2>
+          <p className="text-sm">ستظهر هنا المحتويات التي شاهدتها مؤخراً</p>
+        </div>
+      </>
     );
   }
 
   return (
     <div>
+      <SEO title="سجل المشاهدة" />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">🕓 سجل المشاهدة</h1>
         <button
@@ -91,15 +97,15 @@ export default function WatchHistoryPage() {
           <div key={`${item.type}-${item.id}`} className="relative group">
             <Link to={`/${item.type}/${item.id}`}>
               <div className="rounded-xl overflow-hidden bg-gray-800">
-                <img
+                <LazyImage
                   src={
                     item.poster_path
                       ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
                       : "/placeholder.png"
                   }
                   alt={item.title}
-                  loading="lazy"
-                  className="w-full aspect-[2/3] object-cover hover:scale-105 transition-transform duration-300"
+                  aspectRatio="2/3"
+                  className="w-full hover:scale-105 transition-transform duration-300 rounded-xl"
                 />
               </div>
               <p

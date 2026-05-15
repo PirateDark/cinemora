@@ -1,6 +1,9 @@
+import SEO from "../components/SEO";
+
 export default function PrivacyPage() {
   return (
     <div className="max-w-4xl mx-auto py-8">
+      <SEO title="سياسة الخصوصية" description="سياسة الخصوصية لمنصة سينمورا - كيف نحمي بياناتك ومعلوماتك الشخصية" />
       <h1 className="text-3xl font-bold mb-6 text-center">سياسة الخصوصية</h1>
       <div className="bg-gray-900 rounded-xl p-6 space-y-6 text-gray-300 leading-relaxed">
         <p>

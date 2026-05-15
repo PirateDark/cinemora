@@ -205,7 +205,7 @@ export default function WatchPage() {
       {/* Ambient Background from Poster */}
       {mediaDetails?.poster && (
         <div className="fixed inset-0 -z-10 opacity-[0.04] pointer-events-none">
-          <img src={mediaDetails.poster.replace("w200", "original")} alt="" className="w-full h-full object-cover" />
+          <img src={mediaDetails.poster.replace("w200", "original")} alt="" loading="lazy" className="w-full h-full object-cover" />
         </div>
       )}
 

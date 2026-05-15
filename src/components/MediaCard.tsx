@@ -3,6 +3,7 @@ import { Heart, Bookmark, ShieldAlert, Play, Star } from "lucide-react";
 import { useFavorites } from "../hooks/useFavorites";
 import { useWatchlist } from "../hooks/useWatchlist";
 import { useFamilyMode } from "../hooks/useFamilyMode";
+import LazyImage from "./LazyImage";
 
 interface MediaItem {
   id: number;
@@ -43,15 +44,13 @@ export default function MediaCard({ media, type }: MediaCardProps) {
   if (notSafe) {
     return (
       <div className="relative rounded-xl overflow-hidden bg-gray-800/50 cursor-not-allowed border border-gray-700/30">
-        <img
-          src={posterUrl}
-          alt={titleEn}
-          className="w-full aspect-[2/3] object-cover blur-md scale-110"
-          loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x450?text=No+Image";
-          }}
-        />
+        <div className="w-full aspect-[2/3] overflow-hidden">
+          <LazyImage
+            src={posterUrl}
+            alt={titleEn}
+            className="w-full h-full blur-md scale-110"
+          />
+        </div>
         <div className="absolute inset-0 bg-gray-950/70 flex flex-col items-center justify-center p-4 text-center">
           <ShieldAlert className="w-10 h-10 text-amber-400 mb-2" />
           <p className="text-white font-bold text-sm">غير مناسب للعائلة</p>
@@ -101,14 +100,10 @@ export default function MediaCard({ media, type }: MediaCardProps) {
     <Link to={linkTo} className="block group cursor-pointer">
       <div className="relative rounded-xl overflow-hidden bg-gray-900 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-rose-500/20 border border-gray-800/50 hover:border-gray-700/50">
         <div className="aspect-[2/3] overflow-hidden">
-          <img
+          <LazyImage
             src={posterUrl}
             alt={titleEn}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            loading="lazy"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x450?text=No+Image";
-            }}
+            className="w-full h-full transition-transform duration-700 group-hover:scale-110"
           />
         </div>
 

@@ -21,6 +21,7 @@ const FavoritesPage = lazy(() => import("./pages/FavoritesPage"));
 const WatchlistPage = lazy(() => import("./pages/WatchlistPage"));
 const WatchHistoryPage = lazy(() => import("./pages/WatchHistoryPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
+const DiscoverPage = lazy(() => import("./pages/DiscoverPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const WatchPage = lazy(() => import("./pages/WatchPage"));
@@ -62,6 +63,7 @@ function App() {
             <Route path="/movies" element={<MoviesPage />} />
             <Route path="/tv" element={<TvShowsPage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/discover" element={<DiscoverPage />} />
 
             <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/watchlist" element={<WatchlistPage />} />

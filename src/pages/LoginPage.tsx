@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../components/Toast";
+import SEO from "../components/SEO";
 import {
   Mail,
   Lock,
@@ -72,6 +73,7 @@ export default function LoginPage() {
   if (loading) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
+        <SEO title="تسجيل الدخول" />
         <Loader2 className="w-8 h-8 text-rose-400 animate-spin" />
       </div>
     );
@@ -81,6 +83,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-8" dir="rtl">
+      <SEO title="تسجيل الدخول - سينمورا" description="سجّل الدخول إلى سينمورا للاستمتاع بأفلامك ومسلسلاتك المفضلة" />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-black bg-gradient-to-l from-rose-500 via-rose-400 to-purple-600 bg-clip-text text-transparent">
