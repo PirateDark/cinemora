@@ -36,7 +36,7 @@ const ArabicTvPage = lazy(() => import("./pages/ArabicTvPage"));
 const AsianMoviesPage = lazy(() => import("./pages/AsianMoviesPage"));
 const GenrePage = lazy(() => import("./pages/GenrePage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
-const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
