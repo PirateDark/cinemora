@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إعلان هام - سينمورا</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: #0a0a0a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      width: 100%;
+      max-width: 600px;
+      background: linear-gradient(135deg, #0a0a0a, #111, #0a0a0a);
+      border-radius: 24px;
+      border: 1px solid rgba(244, 63, 94, 0.2);
+      box-shadow: 0 25px 50px -12px rgba(244, 63, 94, 0.15);
+      overflow: hidden;
+      position: relative;
+    }
+    .top-bar { height: 4px; background: linear-gradient(to left, #e11d48, #fb7185, #9333ea); }
+    .bottom-bar { height: 4px; background: linear-gradient(to right, #e11d48, #fb7185, #9333ea); }
+    .header { text-align: center; padding: 40px 20px 10px; }
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      background: linear-gradient(to left, #e11d48, #fb7185, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header .domain { color: #4b5563; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+    .content { padding: 20px 30px 30px; }
+    .badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      border-radius: 50px;
+      color: #fb7185;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+    .title { font-size: 1.5rem; font-weight: 900; color: white; line-height: 1.3; margin-bottom: 20px; }
+    .text { color: #d1d5db; line-height: 1.8; font-size: 0.95rem; }
+    .text p { margin-bottom: 16px; }
+    .divider { border-top: 1px solid #1f2937; padding-top: 16px; margin-top: 8px; }
+    .divider p { color: #9ca3af; font-size: 0.9rem; text-align: center; }
+    .divider strong { color: #fb7185; }
+    .footer-text { text-align: center; color: #4b5563; font-size: 0.75rem; margin-top: 20px; padding-bottom: 30px; }
+    .download-btn {
+      margin-top: 20px;
+      padding: 12px 32px;
+      background: #e11d48;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Tajawal', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.4);
+    }
+    .download-btn:hover { background: #e11d48; transform: scale(1.02); }
+    .hint { color: #4b5563; font-size: 0.75rem; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="card" id="poster">
+    <div class="top-bar"></div>
+    <div class="header">
+      <h1>Cinemora</h1>
+      <p class="domain">cinemoratv.online</p>
+    </div>
+    <div class="content">
+      <div style="text-align:center;">
+        <span class="badge">إعلان هام</span>
+        <h2 class="title">السلام عليكم ورحمة الله وبركاته</h2>
+      </div>
+      <div class="text">
+        <p>بعد تفكير طويل ومراجعة للنفس، قررت إيقاف تشغيل موقع سينمورا بشكل نهائي.</p>
+        <p>هذا القرار لم يكن سهلاً، لكنه نابع من قناعة شخصية ورغبة صادقة في الابتعاد عما لا أراه مناسبًا لي أمام الله سبحانه وتعالى، فالدنيا زائلة، وما يبقى للإنسان هو عمله.</p>
+        <p>أشكر كل من دعم الموقع وساندنا خلال الفترة الماضية، وأعتذر عن أي إزعاج قد يسببه هذا القرار لبعض المتابعين.</p>
+        <p>أسأل الله أن يوفقنا جميعًا لما يحب ويرضى، وأن يرزقنا وإياكم الخير والبركة في أرزاقنا وأعمالنا، وأن يجعل ما نقوم به خالصًا لوجهه الكريم.</p>
+      </div>
+      <div class="divider">
+        <p>🤍 أرجو منكم الدعاء لصديقتنا <strong>ليال</strong> بالتوفيق في الامتحانات</p>
+      </div>
+      <p class="footer-text">والسلام عليكم ورحمة الله وبركاته</p>
+    </div>
+    <div class="bottom-bar"></div>
+  </div>
+  <button class="download-btn" onclick="downloadPoster()">📥 تحميل الصورة</button>
+  <p class="hint">أو استخدم Screenshot لحفظ البوستر</p>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    function downloadPoster() {
+      const el = document.getElementById('poster');
+      html2canvas(el, {
+        backgroundColor: '#0a0a0a',
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'cinemora-announcement.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html>
